@@ -3,968 +3,812 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>PRISM — бесконечная арена</title>
+<title>PRISM II — бесконечная арена света</title>
 <style>
   :root{
-    --bg:#070912;
-    --bg2:#0c1024;
-    --ink:#e8ecff;
-    --muted:#7a86b8;
-    --cyan:#3df0ff;
-    --violet:#a36bff;
-    --gold:#ffd24a;
-    --rose:#ff5d8f;
-    --green:#5dffb0;
-    --panel:rgba(14,18,40,0.82);
-    --line:rgba(120,140,230,0.18);
+    --bg:#05060f;--ink:#eef2ff;--muted:#7a86b8;
+    --cyan:#3df0ff;--violet:#a36bff;--gold:#ffd24a;--rose:#ff5d8f;--green:#5dffb0;--orange:#ff8a3d;
+    --panel:rgba(13,17,38,0.85);--line:rgba(120,140,230,0.18);
+    --common:#9fb0d8;--rare:#3df0ff;--epic:#a36bff;--legend:#ffd24a;
   }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;
+    -webkit-user-select:none;user-select:none}
   html,body{height:100%;background:var(--bg);color:var(--ink);overflow:hidden;
     font-family:"Space Grotesk",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
   #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-    background:radial-gradient(120% 120% at 50% 0%,#10142e 0%,var(--bg) 55%,#03040a 100%);}
+    background:radial-gradient(120% 120% at 50% 0%,#101634 0%,var(--bg) 55%,#020308 100%);}
   canvas{display:block;touch-action:none;}
   .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-    z-index:40;background:rgba(4,6,16,0.72);backdrop-filter:blur(7px);}
+    z-index:40;background:rgba(3,4,12,0.74);backdrop-filter:blur(8px);padding:14px;overflow:auto}
   .hidden{display:none!important;}
-
-  .card{width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);
-    border-radius:22px;padding:30px 30px 26px;box-shadow:0 30px 80px rgba(0,0,0,.6),
-    inset 0 1px 0 rgba(255,255,255,.04);}
-  .title{font-size:clamp(46px,11vw,92px);font-weight:700;letter-spacing:.22em;line-height:.95;
+  .card{width:min(580px,94vw);background:var(--panel);border:1px solid var(--line);
+    border-radius:22px;padding:28px;box-shadow:0 30px 90px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.05);}
+  .title{font-size:clamp(44px,11vw,90px);font-weight:700;letter-spacing:.2em;line-height:.95;
     background:linear-gradient(120deg,var(--cyan),var(--violet) 55%,var(--rose));
-    -webkit-background-clip:text;background-clip:text;color:transparent;text-align:center;
-    text-shadow:0 0 40px rgba(120,90,255,.25);}
-  .sub{text-align:center;color:var(--muted);letter-spacing:.42em;font-size:13px;
-    margin-top:6px;text-transform:uppercase;}
-  .lead{color:var(--muted);font-size:14.5px;line-height:1.6;margin:22px 0;text-align:center}
-  .lead b{color:var(--ink);font-weight:600}
-
-  .btn{display:block;width:100%;cursor:pointer;border:none;border-radius:14px;
-    font-family:inherit;font-weight:600;letter-spacing:.04em;font-size:17px;
-    padding:16px;color:#05060f;background:linear-gradient(120deg,var(--cyan),var(--violet));
-    transition:transform .12s ease,filter .12s ease;}
+    -webkit-background-clip:text;background-clip:text;color:transparent;text-align:center;}
+  .title .two{font-size:.5em;vertical-align:super;letter-spacing:0}
+  .sub{text-align:center;color:var(--muted);letter-spacing:.4em;font-size:12px;margin-top:6px;text-transform:uppercase;}
+  .lead{color:var(--muted);font-size:14px;line-height:1.6;margin:20px 0;text-align:center}
+  .lead b{color:var(--ink)}
+  .btn{display:block;width:100%;cursor:pointer;border:none;border-radius:14px;font-family:inherit;
+    font-weight:700;letter-spacing:.04em;font-size:17px;padding:16px;color:#05060f;
+    background:linear-gradient(120deg,var(--cyan),var(--violet));transition:transform .12s,filter .12s;}
   .btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
   .btn:active{transform:translateY(0)}
-  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
   .btn.ghost:hover{background:rgba(120,140,230,.08)}
-  .row{display:flex;gap:12px;margin-top:12px}
-  .row .btn{margin:0}
-
-  /* HUD */
+  .btn.gold{background:linear-gradient(120deg,var(--gold),var(--orange));color:#1a1000}
+  .btn.rose{background:linear-gradient(120deg,var(--rose),#b3306a);color:#fff}
+  .row{display:flex;gap:12px;margin-top:12px}.row .btn{margin:0}
+  .statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0 6px}
+  .sg{background:rgba(10,14,32,.6);border:1px solid var(--line);border-radius:12px;padding:11px;text-align:center}
+  .sg .k{font-size:9px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+  .sg .v{font-size:22px;font-weight:700;margin-top:2px}
+  .v.cyan{color:var(--cyan)}.v.gold{color:var(--gold)}.v.rose{color:var(--rose)}.v.green{color:var(--green)}
   #hud{position:fixed;inset:0;pointer-events:none;z-index:20;font-variant-numeric:tabular-nums}
-  .topbar{position:absolute;top:0;left:0;right:0;padding:14px 16px;display:flex;
-    justify-content:space-between;align-items:flex-start;gap:12px}
-  .stat{background:rgba(8,11,26,.55);border:1px solid var(--line);border-radius:12px;
-    padding:8px 12px;backdrop-filter:blur(6px)}
-  .stat .k{font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
-  .stat .v{font-size:20px;font-weight:700;margin-top:1px}
-  .v.cyan{color:var(--cyan)} .v.gold{color:var(--gold)} .v.rose{color:var(--rose)}
-  .wavebadge{text-align:center}
-  .wavebadge .v{font-size:26px}
-
-  /* health + xp bars */
-  .bars{position:absolute;left:50%;transform:translateX(-50%);bottom:18px;width:min(560px,90vw)}
-  .bar{height:14px;border-radius:8px;background:rgba(255,255,255,.06);
-    border:1px solid var(--line);overflow:hidden;position:relative;margin-top:8px}
-  .bar > i{display:block;height:100%;width:0;transition:width .15s ease}
-  .bar.hp > i{background:linear-gradient(90deg,var(--rose),var(--gold))}
-  .bar.xp > i{background:linear-gradient(90deg,var(--cyan),var(--violet))}
-  .bar .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#fff;
-    text-shadow:0 1px 2px rgba(0,0,0,.7)}
-
-  /* level up choices */
-  .choices{display:flex;flex-direction:column;gap:12px;margin-top:6px}
-  .choice{pointer-events:auto;cursor:pointer;text-align:left;display:flex;gap:14px;
-    align-items:center;background:rgba(10,14,32,.7);border:1px solid var(--line);
-    border-radius:14px;padding:14px 16px;transition:transform .1s,border-color .1s,background .1s}
-  .choice:hover{transform:translateX(4px);border-color:var(--cyan);background:rgba(20,28,60,.8)}
-  .choice .ic{width:46px;height:46px;flex:0 0 46px;border-radius:11px;display:flex;
-    align-items:center;justify-content:center;font-size:24px;
-    background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.16),transparent 60%),
-    linear-gradient(135deg,var(--violet),var(--cyan))}
+  .topbar{position:absolute;top:0;left:0;right:0;padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .stat{background:rgba(7,10,24,.55);border:1px solid var(--line);border-radius:11px;padding:7px 11px;backdrop-filter:blur(6px)}
+  .stat .k{font-size:9px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+  .stat .v{font-size:19px;font-weight:700;margin-top:1px}
+  .wavebadge{text-align:center}.wavebadge .v{font-size:24px}
+  #combo{position:absolute;top:64px;left:50%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .2s}
+  #combo.on{opacity:1}
+  #comboMul{font-size:clamp(40px,11vw,76px);font-weight:700;line-height:1;
+    background:linear-gradient(120deg,var(--gold),var(--orange));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 30px rgba(255,160,40,.4)}
+  #comboLbl{font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-top:-4px}
+  #comboBar{width:140px;height:5px;border-radius:4px;background:rgba(255,255,255,.1);margin:6px auto 0;overflow:hidden}
+  #comboBar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--rose));width:100%}
+  .bars{position:absolute;left:50%;transform:translateX(-50%);bottom:16px;width:min(580px,92vw)}
+  .bar{height:13px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--line);overflow:hidden;position:relative;margin-top:7px}
+  .bar>i{display:block;height:100%;width:0;transition:width .12s ease}
+  .bar.hp>i{background:linear-gradient(90deg,var(--rose),var(--gold))}
+  .bar.xp>i{background:linear-gradient(90deg,var(--cyan),var(--violet))}
+  .bar .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+  .pausebtn{position:absolute;top:12px;left:50%;transform:translateX(-50%);pointer-events:auto;cursor:pointer;background:rgba(7,10,24,.55);border:1px solid var(--line);color:var(--ink);border-radius:10px;width:36px;height:36px;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .choices{display:flex;flex-direction:column;gap:11px;margin-top:6px}
+  .choice{pointer-events:auto;cursor:pointer;text-align:left;display:flex;gap:13px;align-items:center;background:rgba(10,14,32,.7);border:1px solid var(--line);border-radius:14px;padding:13px 15px;transition:transform .1s,border-color .1s,background .1s;position:relative;overflow:hidden}
+  .choice:hover{transform:translateX(5px)}
+  .choice .ic{width:46px;height:46px;flex:0 0 46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:24px;background:linear-gradient(135deg,var(--violet),var(--cyan))}
   .choice .nm{font-weight:700;font-size:16px}
-  .choice .ds{color:var(--muted);font-size:12.5px;margin-top:3px;line-height:1.4}
-  .choice .tag{margin-left:auto;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--gold);align-self:flex-start}
-  .lvl-tier-2 .ic{filter:hue-rotate(40deg)} 
-
-  .upgrade-list{display:flex;flex-direction:column;gap:10px;margin-top:18px;max-height:48vh;overflow:auto}
-  .meta-item{pointer-events:auto;display:flex;align-items:center;gap:12px;text-align:left;
-    background:rgba(10,14,32,.6);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-  .meta-item .ic{font-size:20px;width:36px;text-align:center}
-  .meta-item .body{flex:1}
-  .meta-item .nm{font-weight:600;font-size:14px}
-  .meta-item .ds{color:var(--muted);font-size:11.5px;margin-top:2px}
+  .choice .ds{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.4}
+  .choice .tag{margin-left:auto;font-size:9px;letter-spacing:.14em;text-transform:uppercase;align-self:flex-start;font-weight:700}
+  .choice[data-r="common"]{border-color:rgba(159,176,216,.4)}
+  .choice[data-r="rare"]{border-color:var(--rare);box-shadow:0 0 18px rgba(61,240,255,.12)}
+  .choice[data-r="epic"]{border-color:var(--epic);box-shadow:0 0 22px rgba(163,107,255,.18)}
+  .choice[data-r="legend"]{border-color:var(--legend);box-shadow:0 0 30px rgba(255,210,74,.28)}
+  .choice[data-r="rare"] .tag{color:var(--rare)}.choice[data-r="epic"] .tag{color:var(--epic)}
+  .choice[data-r="legend"] .tag{color:var(--legend)}.choice[data-r="common"] .tag{color:var(--common)}
+  .choice[data-r="epic"] .ic{background:linear-gradient(135deg,var(--epic),var(--rose))}
+  .choice[data-r="legend"] .ic{background:linear-gradient(135deg,var(--gold),var(--orange))}
+  @keyframes legendShine{0%{transform:translateX(-120%)}100%{transform:translateX(220%)}}
+  .choice[data-r="legend"]::after{content:'';position:absolute;top:0;left:0;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.25),transparent);animation:legendShine 2.2s infinite}
+  .reroll{margin-top:14px}.reroll .btn{font-size:14px;padding:12px}
+  .upgrade-list{display:flex;flex-direction:column;gap:9px;margin-top:16px;max-height:46vh;overflow:auto}
+  .meta-item{pointer-events:auto;display:flex;align-items:center;gap:12px;text-align:left;background:rgba(10,14,32,.6);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .meta-item .ic{font-size:20px;width:34px;text-align:center}.meta-item .body{flex:1}
+  .meta-item .nm{font-weight:600;font-size:14px}.meta-item .ds{color:var(--muted);font-size:11px;margin-top:2px}
   .meta-item .lv{font-size:10px;color:var(--cyan);letter-spacing:.1em;margin-top:3px}
-  .meta-buy{pointer-events:auto;cursor:pointer;border:none;border-radius:10px;padding:9px 12px;
-    font-family:inherit;font-weight:700;font-size:13px;color:#05060f;white-space:nowrap;
-    background:linear-gradient(120deg,var(--gold),#ff9d3c)}
+  .meta-buy{pointer-events:auto;cursor:pointer;border:none;border-radius:10px;padding:9px 12px;font-family:inherit;font-weight:700;font-size:13px;color:#05060f;white-space:nowrap;background:linear-gradient(120deg,var(--gold),var(--orange))}
   .meta-buy:disabled{background:rgba(120,140,230,.16);color:var(--muted);cursor:not-allowed}
   .meta-buy.max{background:rgba(93,255,176,.18);color:var(--green)}
-
-  .pill{display:inline-flex;align-items:center;gap:7px;background:rgba(255,210,74,.12);
-    border:1px solid rgba(255,210,74,.35);color:var(--gold);border-radius:999px;
-    padding:7px 16px;font-weight:700;letter-spacing:.04em;font-size:15px}
-
-  .dead-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
-  .ds-cell{background:rgba(10,14,32,.6);border:1px solid var(--line);border-radius:12px;padding:12px}
-  .ds-cell .k{font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
-  .ds-cell .v{font-size:24px;font-weight:700;margin-top:2px}
-
-  .hint{position:absolute;bottom:46px;left:50%;transform:translateX(-50%);color:var(--muted);
-    font-size:12px;letter-spacing:.12em;text-align:center;text-transform:uppercase;
-    animation:pulse 2.4s infinite}
-  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.85}}
-
-  .pausebtn{position:absolute;top:14px;left:50%;transform:translateX(-50%);pointer-events:auto;
-    cursor:pointer;background:rgba(8,11,26,.55);border:1px solid var(--line);color:var(--ink);
-    border-radius:10px;width:38px;height:38px;font-size:15px;display:flex;align-items:center;justify-content:center}
-
-  .credits{text-align:center;color:var(--muted);font-size:11px;letter-spacing:.18em;margin-top:18px;text-transform:uppercase}
-  .flash{animation:flash .4s ease}
-  @keyframes flash{0%{filter:brightness(2)}100%{filter:brightness(1)}}
-  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+  .pill{display:inline-flex;align-items:center;gap:7px;background:rgba(255,210,74,.12);border:1px solid rgba(255,210,74,.35);color:var(--gold);border-radius:999px;padding:7px 16px;font-weight:700;font-size:15px}
+  .ach-list{display:flex;flex-direction:column;gap:8px;margin-top:14px;max-height:50vh;overflow:auto}
+  .ach{display:flex;gap:11px;align-items:center;background:rgba(10,14,32,.5);border:1px solid var(--line);border-radius:11px;padding:10px 12px;opacity:.45}
+  .ach.done{opacity:1;border-color:rgba(255,210,74,.4)}
+  .ach .ic{font-size:20px;width:30px;text-align:center}.ach .nm{font-weight:600;font-size:13px}
+  .ach .ds{color:var(--muted);font-size:11px;margin-top:1px}.ach .chk{margin-left:auto;color:var(--green);font-size:16px}
+  .gamble-prize{text-align:center;margin:18px 0}
+  .gamble-prize .amt{font-size:clamp(48px,13vw,86px);font-weight:700;color:var(--gold);text-shadow:0 0 36px rgba(255,200,60,.4)}
+  .gamble-prize .lbl{color:var(--muted);letter-spacing:.2em;text-transform:uppercase;font-size:12px}
+  .risk-note{text-align:center;color:var(--muted);font-size:12px;margin-top:8px}
+  .credits{text-align:center;color:var(--muted);font-size:10px;letter-spacing:.16em;margin-top:16px;text-transform:uppercase}
+  .toast{position:fixed;top:120px;left:50%;transform:translateX(-50%);z-index:60;pointer-events:none;display:flex;flex-direction:column;gap:8px;align-items:center}
+  .toast .t{background:rgba(13,17,38,.92);border:1px solid var(--gold);color:var(--gold);border-radius:12px;padding:10px 18px;font-weight:700;font-size:14px;letter-spacing:.04em;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:toastIn .4s ease}
+  @keyframes toastIn{from{transform:translateY(-14px);opacity:0}to{transform:translateY(0);opacity:1}}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}}
 </style>
 </head>
 <body>
 <div id="wrap"><canvas id="c"></canvas></div>
-
-<!-- HUD -->
 <div id="hud" class="hidden">
   <div class="topbar">
     <div class="stat"><div class="k">Время</div><div class="v" id="hudTime">0:00</div></div>
     <div class="stat wavebadge"><div class="k">Волна</div><div class="v rose" id="hudWave">1</div></div>
-    <div class="stat" style="text-align:right"><div class="k">Осколки</div><div class="v gold" id="hudShards">0</div></div>
+    <div class="stat" style="text-align:right"><div class="k">Свет</div><div class="v gold" id="hudShards">0</div></div>
   </div>
+  <div id="combo"><div id="comboMul">x2</div><div id="comboLbl">комбо</div><div id="comboBar"><i></i></div></div>
   <div class="bars">
     <div class="bar xp"><i id="xpFill"></i><div class="lbl" id="xpLbl">УР. 1</div></div>
     <div class="bar hp"><i id="hpFill"></i><div class="lbl" id="hpLbl">ЦЕЛОСТНОСТЬ</div></div>
   </div>
   <div class="pausebtn" id="pauseBtn">⏸</div>
 </div>
-
-<!-- START -->
+<div class="toast hidden" id="toast"></div>
 <div class="overlay" id="startScreen">
   <div class="card">
-    <div class="title">PRISM</div>
+    <div class="title">PRISM<span class="two">II</span></div>
     <div class="sub">бесконечная арена света</div>
-    <p class="lead">Ты — призма в пустоте. Осколки тьмы идут <b>без конца</b>. Ты автоматически
-      рассеиваешь их лучами — твоё дело <b>двигаться</b>, выживать и собирать свет.
-      Каждый уровень — выбор грани. Каждая волна сильнее. Предела нет.</p>
-    <div class="pill" id="bankPill">⬡ Архив света: 0</div>
-    <div class="row" style="margin-top:20px">
-      <button class="btn" id="playBtn">Войти в арену</button>
+    <p class="lead">Ты — призма в пустоте. Тьма идёт <b>без конца</b> и крепнет. Держи <b>комбо</b>, чтобы свет сыпался множителем. Рискуй в <b>сундуках</b>. Лови <b>легендарные грани</b>.</p>
+    <div class="statgrid">
+      <div class="sg"><div class="k">Рекорд волн</div><div class="v rose" id="bWave">0</div></div>
+      <div class="sg"><div class="k">Ранг</div><div class="v cyan" id="bRank">—</div></div>
+      <div class="sg"><div class="k">Архив</div><div class="v gold" id="bBank">0</div></div>
     </div>
-    <div class="row">
-      <button class="btn ghost" id="metaBtn">Архив улучшений</button>
-    </div>
-    <div class="credits">мышь / тач / WASD — движение · стрельба авто</div>
+    <div class="row" style="margin-top:18px"><button class="btn" id="playBtn">Войти в арену</button></div>
+    <div class="row"><button class="btn ghost" id="metaBtn">Архив</button><button class="btn ghost" id="achBtn">Достижения</button></div>
+    <div class="credits">мышь · тач · WASD · ПРОБЕЛ — пауза</div>
   </div>
 </div>
-
-<!-- META / permanent upgrades -->
-<div class="overlay hidden" id="metaScreen">
-  <div class="card">
-    <div class="title" style="font-size:clamp(28px,7vw,44px)">АРХИВ</div>
-    <div class="sub">постоянные грани · сохраняются между забегами</div>
-    <div class="pill" id="metaBank" style="margin:18px auto 0;display:flex;width:max-content">⬡ 0</div>
-    <div class="upgrade-list" id="metaList"></div>
-    <div class="row" style="margin-top:18px">
-      <button class="btn ghost" id="metaBack">Назад</button>
-    </div>
+<div class="overlay hidden" id="metaScreen"><div class="card">
+  <div class="title" style="font-size:clamp(30px,7vw,46px)">АРХИВ</div><div class="sub">постоянные грани</div>
+  <div class="pill" id="metaBank" style="margin:16px auto 0;display:flex;width:max-content">⬡ 0</div>
+  <div class="upgrade-list" id="metaList"></div>
+  <div class="row" style="margin-top:16px"><button class="btn ghost" id="metaBack">Назад</button></div>
+</div></div>
+<div class="overlay hidden" id="achScreen"><div class="card">
+  <div class="title" style="font-size:clamp(28px,6.5vw,42px)">ПУТЬ</div><div class="sub">достижения · разблокировки</div>
+  <div class="ach-list" id="achList"></div>
+  <div class="row" style="margin-top:16px"><button class="btn ghost" id="achBack">Назад</button></div>
+</div></div>
+<div class="overlay hidden" id="levelScreen"><div class="card">
+  <div class="title" style="font-size:clamp(24px,5.5vw,38px)">НОВАЯ ГРАНЬ</div>
+  <div class="sub" id="levelSub">уровень 2 · выбери одно</div>
+  <div class="choices" id="choiceList"></div>
+  <div class="reroll hidden" id="rerollWrap"><button class="btn gold" id="rerollBtn">↻ Переброс (⬡ <span id="rerollCost">0</span>)</button></div>
+</div></div>
+<div class="overlay hidden" id="gambleScreen"><div class="card">
+  <div class="title" style="font-size:clamp(26px,6vw,42px);background:linear-gradient(120deg,var(--gold),var(--orange))">СУНДУК СВЕТА</div>
+  <div class="sub">забрать или рискнуть</div>
+  <div class="gamble-prize"><div class="amt" id="gambleAmt">0</div><div class="lbl">света в сундуке</div></div>
+  <div class="risk-note" id="gambleNote">Рискни: 60% удвоить · 40% потерять половину</div>
+  <button class="btn gold" id="gambleRisk">⚡ Рискнуть x2</button>
+  <div class="row"><button class="btn ghost" id="gambleTake">Забрать спокойно</button></div>
+</div></div>
+<div class="overlay hidden" id="deadScreen"><div class="card">
+  <div class="title" style="font-size:clamp(32px,8vw,58px);background:linear-gradient(120deg,var(--rose),var(--gold))">РАССЕЯН</div>
+  <div class="sub" id="deadRank">свет угас</div>
+  <div class="statgrid" style="grid-template-columns:repeat(2,1fr)">
+    <div class="sg"><div class="k">Волна</div><div class="v rose" id="deadWave">0</div></div>
+    <div class="sg"><div class="k">Уровень</div><div class="v cyan" id="deadLevel">0</div></div>
+    <div class="sg"><div class="k">Выжил</div><div class="v" id="deadTime">0:00</div></div>
+    <div class="sg"><div class="k">Свет → Архив</div><div class="v gold" id="deadShards">0</div></div>
   </div>
-</div>
-
-<!-- LEVEL UP -->
-<div class="overlay hidden" id="levelScreen">
-  <div class="card">
-    <div class="title" style="font-size:clamp(26px,6vw,40px)">НОВАЯ ГРАНЬ</div>
-    <div class="sub" id="levelSub">уровень 2 · выбери одно</div>
-    <div class="choices" id="choiceList"></div>
-  </div>
-</div>
-
-<!-- DEATH -->
-<div class="overlay hidden" id="deadScreen">
-  <div class="card">
-    <div class="title" style="font-size:clamp(34px,8vw,60px);background:linear-gradient(120deg,var(--rose),var(--gold))">РАССЕЯН</div>
-    <div class="sub">свет угас… но не исчез</div>
-    <div class="dead-stats">
-      <div class="ds-cell"><div class="k">Волна</div><div class="v rose" id="deadWave">0</div></div>
-      <div class="ds-cell"><div class="k">Уровень</div><div class="v cyan" id="deadLevel">0</div></div>
-      <div class="ds-cell"><div class="k">Выжил</div><div class="v" id="deadTime">0:00</div></div>
-      <div class="ds-cell"><div class="k">Свет собран</div><div class="v gold" id="deadShards">0</div></div>
-    </div>
-    <p class="lead" style="margin:0 0 16px" id="deadNote"></p>
-    <button class="btn" id="againBtn">Снова в арену</button>
-    <div class="row"><button class="btn ghost" id="deadMetaBtn">Потратить свет в Архиве</button></div>
-  </div>
-</div>
-
-<!-- PAUSE -->
-<div class="overlay hidden" id="pauseScreen">
-  <div class="card">
-    <div class="title" style="font-size:clamp(28px,7vw,46px)">ПАУЗА</div>
-    <div class="sub">арена ждёт</div>
-    <div class="row" style="margin-top:22px"><button class="btn" id="resumeBtn">Продолжить</button></div>
-    <div class="row"><button class="btn ghost" id="quitBtn">Сдаться</button></div>
-  </div>
-</div>
-
+  <p class="lead" style="margin:14px 0" id="deadNote"></p>
+  <button class="btn" id="againBtn">Снова в арену</button>
+  <div class="row"><button class="btn ghost" id="deadMetaBtn">Архив</button><button class="btn ghost" id="deadMenuBtn">Меню</button></div>
+</div></div>
+<div class="overlay hidden" id="pauseScreen"><div class="card">
+  <div class="title" style="font-size:clamp(28px,7vw,46px)">ПАУЗА</div><div class="sub" id="pauseBuild">арена ждёт</div>
+  <div class="row" style="margin-top:20px"><button class="btn" id="resumeBtn">Продолжить</button></div>
+  <div class="row"><button class="btn ghost" id="quitBtn">Сдаться</button></div>
+</div></div>
 <script>
 "use strict";
 //================================================================
-// PRISM — бесконечная арена. Один файл, без зависимостей.
+// PRISM II — single-file roguelite. Engine + retention systems.
 //================================================================
-const cvs = document.getElementById('c');
-const ctx = cvs.getContext('2d');
+const cvs=document.getElementById('c'),ctx=cvs.getContext('2d');
 let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2);
-function resize(){
-  W=window.innerWidth;H=window.innerHeight;
-  cvs.width=W*DPR;cvs.height=H*DPR;cvs.style.width=W+'px';cvs.style.height=H+'px';
-  ctx.setTransform(DPR,0,0,DPR,0,0);
-}
-window.addEventListener('resize',resize);resize();
+function resize(){W=window.innerWidth;H=window.innerHeight;cvs.width=W*DPR;cvs.height=H*DPR;
+  cvs.style.width=W+'px';cvs.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);}
+addEventListener('resize',resize);resize();
 
-//--- persistent meta save ---
-const SAVE_KEY='prism_save_v1';
-function loadSave(){
-  try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s)return s;}catch(e){}
-  return {bank:0, best:{wave:0,level:0,time:0}, meta:{}};
-}
+const $=id=>document.getElementById(id);
+const rand=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[(Math.random()*a.length)|0];
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const TAU=Math.PI*2;
+const dist2=(ax,ay,bx,by)=>{const dx=ax-bx,dy=ay-by;return dx*dx+dy*dy;};
+
+//--- save ---
+const SAVE_KEY='prism2_save';
+function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s&&s.v===2)return s;}catch(e){}
+  return {v:2,bank:0,best:{wave:0,level:0,time:0,kills:0},meta:{},ach:{},runs:0,totalKills:0,totalShards:0};}
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 let save=loadSave();
 
-//--- permanent meta upgrades ---
+//--- ranks (status / pride trigger) ---
+const RANKS=[[0,'Искра'],[6,'Луч'],[11,'Призма'],[16,'Грань'],[21,'Сияние'],
+  [26,'Маяк'],[31,'Сверхновая'],[41,'Квазар'],[51,'Сингулярность']];
+function rankFor(wave){let r=RANKS[0][1];for(const[w,n]of RANKS)if(wave>=w)r=n;return r;}
+
+//--- permanent meta ---
 const META=[
-  {id:'maxhp', ic:'❤', nm:'Прочность ядра', ds:'+12 макс. целостности за уровень', max:8, cost:l=>40+l*30},
-  {id:'dmg',   ic:'⚔', nm:'Резонанс луча',   ds:'+8% урона за уровень',           max:8, cost:l=>50+l*35},
-  {id:'speed', ic:'➤', nm:'Текучесть',       ds:'+5% скорости движения за уровень',max:6, cost:l=>40+l*25},
-  {id:'magnet',ic:'✦', nm:'Притяжение света',ds:'+18% радиус сбора за уровень',    max:6, cost:l=>35+l*20},
-  {id:'regen', ic:'+', nm:'Самовосстановление',ds:'+0.4 целостности/сек за уровень',max:5, cost:l=>60+l*45},
-  {id:'start', ic:'⭐', nm:'Фора',           ds:'Начинаешь с +1 случайной гранью', max:3, cost:l=>120+l*120},
-  {id:'shardx',ic:'⬡', nm:'Жадность',        ds:'+12% к собранному свету за уровень',max:5, cost:l=>70+l*50},
-  {id:'crit',  ic:'✸', nm:'Грань остроты',   ds:'+5% шанс x2.5 урона за уровень',  max:5, cost:l=>80+l*50},
+  {id:'maxhp',ic:'❤',nm:'Прочность ядра',ds:'+14 макс. целостности / ур.',max:8,cost:l=>40+l*30},
+  {id:'dmg',ic:'⚔',nm:'Резонанс',ds:'+8% урон / ур.',max:8,cost:l=>50+l*35},
+  {id:'speed',ic:'➤',nm:'Текучесть',ds:'+5% скорость / ур.',max:6,cost:l=>40+l*25},
+  {id:'magnet',ic:'✦',nm:'Притяжение',ds:'+20% радиус сбора / ур.',max:6,cost:l=>35+l*20},
+  {id:'regen',ic:'+',nm:'Восстановление',ds:'+0.5 целостн./сек / ур.',max:5,cost:l=>60+l*45},
+  {id:'start',ic:'⭐',nm:'Фора',ds:'+1 стартовая грань',max:3,cost:l=>120+l*120},
+  {id:'shardx',ic:'⬡',nm:'Жадность',ds:'+12% света / ур.',max:5,cost:l=>70+l*50},
+  {id:'crit',ic:'✸',nm:'Острота',ds:'+5% крит / ур.',max:5,cost:l=>80+l*50},
+  {id:'combo',ic:'🔥',nm:'Пламя комбо',ds:'Комбо держится дольше / ур.',max:5,cost:l=>90+l*55},
+  {id:'reroll',ic:'↻',nm:'Прозрение',ds:'+1 бесплатный переброс / забег',max:3,cost:l=>110+l*90},
+  {id:'luck',ic:'🍀',nm:'Удача',ds:'+8% шанс редких граней / ур.',max:5,cost:l=>100+l*60},
 ];
-function metaLv(id){return save.meta[id]||0;}
+const metaLv=id=>save.meta[id]||0;
+
+//--- achievements (collection / unlock trigger) ---
+const ACH=[
+  {id:'first',ic:'✦',nm:'Первый свет',ds:'Заверши первый забег',chk:s=>s.runs>=1},
+  {id:'w5',ic:'➎',nm:'Пятая волна',ds:'Дойди до волны 5',chk:s=>s.best.wave>=5},
+  {id:'w10',ic:'☠',nm:'Убийца боссов',ds:'Дойди до волны 10',chk:s=>s.best.wave>=10},
+  {id:'w20',ic:'★',nm:'Несокрушим',ds:'Дойди до волны 20',chk:s=>s.best.wave>=20},
+  {id:'w30',ic:'✸',nm:'Сверхновая',ds:'Дойди до волны 30',chk:s=>s.best.wave>=30},
+  {id:'k500',ic:'⚔',nm:'Жнец',ds:'500 убийств всего',chk:s=>s.totalKills>=500},
+  {id:'k2000',ic:'⚡',nm:'Буря',ds:'2000 убийств всего',chk:s=>s.totalKills>=2000},
+  {id:'rich',ic:'⬡',nm:'Богач',ds:'Собери 1000 света всего',chk:s=>s.totalShards>=1000},
+  {id:'lv15',ic:'△',nm:'Огранённый',ds:'Достигни уровня 15 в забеге',chk:s=>s.best.level>=15},
+  {id:'survive',ic:'⧖',nm:'Долгожитель',ds:'Выживи 8 минут',chk:s=>s.best.time>=480},
+];
+function checkAch(){let unlocked=[];for(const a of ACH){if(!save.ach[a.id]&&a.chk(save)){save.ach[a.id]=1;unlocked.push(a);}}
+  if(unlocked.length){persist();unlocked.forEach(a=>toast('🏆 '+a.nm));}return unlocked;}
 
 //--- input ---
-const input={mx:W/2,my:H/2,active:false,keys:{}};
-function setTarget(x,y){input.mx=x;input.my=y;input.active=true;}
-cvs.addEventListener('mousemove',e=>setTarget(e.clientX,e.clientY));
-cvs.addEventListener('touchstart',e=>{const t=e.touches[0];setTarget(t.clientX,t.clientY);},{passive:true});
-cvs.addEventListener('touchmove',e=>{const t=e.touches[0];setTarget(t.clientX,t.clientY);e.preventDefault();},{passive:false});
+const input={mx:W/2,my:H/2,keys:{}};
+function setT(x,y){input.mx=x;input.my=y;}
+cvs.addEventListener('mousemove',e=>setT(e.clientX,e.clientY));
+cvs.addEventListener('touchstart',e=>{const t=e.touches[0];setT(t.clientX,t.clientY);},{passive:true});
+cvs.addEventListener('touchmove',e=>{const t=e.touches[0];setT(t.clientX,t.clientY);e.preventDefault();},{passive:false});
 addEventListener('keydown',e=>{input.keys[e.key.toLowerCase()]=true;
-  if(e.key===' '||e.key==='Escape')togglePause();});
+  if(e.key===' '||e.key==='Escape'){e.preventDefault();togglePause();}});
 addEventListener('keyup',e=>{input.keys[e.key.toLowerCase()]=false;});
 
-//--- helpers ---
-const rand=(a,b)=>a+Math.random()*(b-a);
-const pick=arr=>arr[(Math.random()*arr.length)|0];
-const clamp=(v,a,b)=>v<a?a:v>b?b:v;
-const TAU=Math.PI*2;
-function dist2(ax,ay,bx,by){const dx=ax-bx,dy=ay-by;return dx*dx+dy*dy;}
-
-//--- game state ---
-let G=null;
-function freshGame(){
-  const m={
-    maxhp:metaLv('maxhp')*12, dmg:metaLv('dmg')*0.08, speed:metaLv('speed')*0.05,
-    magnet:metaLv('magnet')*0.18, regen:metaLv('regen')*0.4, shardx:metaLv('shardx')*0.12,
-    crit:metaLv('crit')*0.05,
-  };
-  const g={
-    t:0, wave:1, waveTimer:0, spawnAcc:0, alive:true, paused:false,
-    shards:0, level:1, xp:0, xpNeed:5, kills:0,
-    player:{
-      x:W/2,y:H/2,r:16,
-      hp:100+m.maxhp, maxhp:100+m.maxhp,
-      baseSpeed:265*(1+m.speed),
-      // weapon stats
-      dmg:10*(1+m.dmg), fireRate:0.55, projSpeed:560, projCount:1, spread:0,
-      pierce:0, range:560, projSize:5, lifesteal:0, crit:0.05+m.crit, critMul:2.5,
-      magnet:120*(1+m.magnet), regen:m.regen, orbit:0, orbitDmg:14, thorns:0,
-      slowAura:0, explode:0, ricochet:0, hpOnLevel:0, dmgFlat:0,
-      iframe:0, fireAcc:0, dashCd:0,
-    },
-    enemies:[], bullets:[], shardsArr:[], parts:[], orbs:[], texts:[],
-    chosen:{}, screenShake:0, flashT:0,
-    waveBanner:0, waveName:'',
-  };
-  // meta start: extra random grade
-  for(let i=0;i<metaLv('start');i++) applyUpgrade(pickUpgrades(1,g)[0],g,true);
-  return g;
-}
-
+//--- toast ---
+let toastTimer=null;
+function toast(msg){const el=$('toast');el.classList.remove('hidden');
+  const d=document.createElement('div');d.className='t';d.textContent=msg;el.appendChild(d);
+  setTimeout(()=>{d.remove();if(!el.children.length)el.classList.add('hidden');},2600);}
 //================================================================
-// RUN-TIME UPGRADES (roguelite picks)
+// UPGRADES with rarity (loot / variable reward trigger)
 //================================================================
-const UPGRADES=[
-  {id:'multishot',ic:'※',nm:'Расщепление',ds:'+1 луч за выстрел',w:10,
-    max:8, apply:p=>{p.projCount++;p.spread=Math.max(p.spread,0.32);}},
-  {id:'rapid',ic:'⟫',nm:'Учащение',ds:'+22% скорострельность',w:10,max:99,
-    apply:p=>{p.fireRate*=0.82;}},
-  {id:'power',ic:'⚡',nm:'Усиление',ds:'+30% урон луча',w:10,max:99,
-    apply:p=>{p.dmg*=1.30;}},
-  {id:'pierce',ic:'→',nm:'Пронзание',ds:'Лучи пробивают +1 врага',w:8,max:6,
-    apply:p=>{p.pierce++;}},
-  {id:'velocity',ic:'»',nm:'Ускорение луча',ds:'+25% скорость и дальность',w:7,max:99,
-    apply:p=>{p.projSpeed*=1.25;p.range*=1.12;}},
-  {id:'bigshot',ic:'●',nm:'Уплотнение',ds:'+40% размер луча',w:7,max:99,
-    apply:p=>{p.projSize*=1.4;p.dmg*=1.08;}},
-  {id:'orbit',ic:'◌',nm:'Орбита',ds:'+1 вращающийся осколок-щит',w:9,max:6,
-    apply:p=>{p.orbit++;}},
-  {id:'orbitpow',ic:'◍',nm:'Тяжёлая орбита',ds:'+60% урон орбиты',w:5,max:99,
-    apply:p=>{p.orbitDmg*=1.6;}},
-  {id:'speed',ic:'➤',nm:'Манёвр',ds:'+15% скорость движения',w:9,max:99,
-    apply:p=>{p.baseSpeed*=1.15;}},
-  {id:'magnet',ic:'✦',nm:'Притяжение',ds:'+45% радиус сбора света',w:8,max:99,
-    apply:p=>{p.magnet*=1.45;}},
-  {id:'maxhp',ic:'❤',nm:'Закалка',ds:'+30 макс. целостности и хил',w:9,max:99,
-    apply:p=>{p.maxhp+=30;p.hp=Math.min(p.maxhp,p.hp+30);}},
-  {id:'regen',ic:'+',nm:'Регенерация',ds:'+1.2 целостности/сек',w:7,max:99,
-    apply:p=>{p.regen+=1.2;}},
-  {id:'crit',ic:'✸',nm:'Острота',ds:'+8% крит, +0.4 множитель',w:7,max:99,
-    apply:p=>{p.crit+=0.08;p.critMul+=0.4;}},
-  {id:'lifesteal',ic:'♥',nm:'Вампиризм',ds:'5% урона возвращается целостностью',w:5,max:6,
-    apply:p=>{p.lifesteal+=0.05;}},
-  {id:'thorns',ic:'✶',nm:'Шипы',ds:'Враги получают урон при касании',w:6,max:99,
-    apply:p=>{p.thorns+=12;}},
-  {id:'slow',ic:'❄',nm:'Аура холода',ds:'Замедляет врагов рядом',w:6,max:4,
-    apply:p=>{p.slowAura+=0.18;}},
-  {id:'explode',ic:'✺',nm:'Взрыв',ds:'Убитые враги взрываются осколками',w:6,max:5,
-    apply:p=>{p.explode++;}},
-  {id:'ricochet',ic:'↺',nm:'Рикошет',ds:'Лучи отскакивают в новых врагов',w:5,max:4,
-    apply:p=>{p.ricochet++;p.pierce++;}},
+const RAR={common:{w:62,nm:'обычная',mul:1},rare:{w:26,nm:'редкая',mul:1.6},
+  epic:{w:10,nm:'эпическая',mul:2.4},legend:{w:2,nm:'ЛЕГЕНДА',mul:4}};
+const UP=[
+  {id:'multishot',ic:'※',nm:'Расщепление',base:'+{n} луч к выстрелу',w:10,max:10,
+    val:r=>Math.max(1,Math.round(RAR[r].mul-0.4)),apply:(p,v)=>{p.projCount+=v;p.spread=Math.max(p.spread,0.3);}},
+  {id:'rapid',ic:'⟫',nm:'Учащение',base:'+{n}% скорострельность',w:11,max:99,
+    val:r=>Math.round(18*RAR[r].mul),apply:(p,v)=>{p.fireRate*=1-v/100;}},
+  {id:'power',ic:'⚡',nm:'Усиление',base:'+{n}% урон',w:11,max:99,
+    val:r=>Math.round(25*RAR[r].mul),apply:(p,v)=>{p.dmg*=1+v/100;}},
+  {id:'pierce',ic:'→',nm:'Пронзание',base:'лучи пробивают +{n}',w:8,max:8,
+    val:r=>Math.max(1,Math.round(RAR[r].mul-0.6)),apply:(p,v)=>{p.pierce+=v;}},
+  {id:'velocity',ic:'»',nm:'Ускорение',base:'+{n}% скорость и дальность',w:7,max:99,
+    val:r=>Math.round(20*RAR[r].mul),apply:(p,v)=>{p.projSpeed*=1+v/100;p.range*=1+v/200;}},
+  {id:'bigshot',ic:'●',nm:'Уплотнение',base:'+{n}% размер луча',w:7,max:99,
+    val:r=>Math.round(35*RAR[r].mul),apply:(p,v)=>{p.projSize*=1+v/100;p.dmg*=1.05;}},
+  {id:'orbit',ic:'◌',nm:'Орбита',base:'+{n} вращ. щит-осколок',w:9,max:8,
+    val:r=>Math.max(1,Math.round(RAR[r].mul-0.6)),apply:(p,v)=>{p.orbit+=v;}},
+  {id:'orbitpow',ic:'◍',nm:'Тяжёлая орбита',base:'+{n}% урон орбиты',w:5,max:99,
+    val:r=>Math.round(55*RAR[r].mul),apply:(p,v)=>{p.orbitDmg*=1+v/100;}},
+  {id:'speed',ic:'➤',nm:'Манёвр',base:'+{n}% скорость движения',w:9,max:99,
+    val:r=>Math.round(12*RAR[r].mul),apply:(p,v)=>{p.baseSpeed*=1+v/100;}},
+  {id:'magnet',ic:'✦',nm:'Притяжение',base:'+{n}% радиус сбора',w:8,max:99,
+    val:r=>Math.round(40*RAR[r].mul),apply:(p,v)=>{p.magnet*=1+v/100;}},
+  {id:'maxhp',ic:'❤',nm:'Закалка',base:'+{n} целостн. и хил',w:9,max:99,
+    val:r=>Math.round(28*RAR[r].mul),apply:(p,v)=>{p.maxhp+=v;p.hp=Math.min(p.maxhp,p.hp+v);}},
+  {id:'regen',ic:'+',nm:'Регенерация',base:'+{n} целостн./сек',w:7,max:99,
+    val:r=>+(1.0*RAR[r].mul).toFixed(1),apply:(p,v)=>{p.regen+=v;}},
+  {id:'crit',ic:'✸',nm:'Острота',base:'+{n}% крит',w:7,max:99,
+    val:r=>Math.round(7*RAR[r].mul),apply:(p,v)=>{p.crit+=v/100;p.critMul+=0.3;}},
+  {id:'lifesteal',ic:'♥',nm:'Вампиризм',base:'{n}% урона в целостность',w:5,max:8,
+    val:r=>+(3*RAR[r].mul).toFixed(1),apply:(p,v)=>{p.lifesteal+=v/100;}},
+  {id:'thorns',ic:'✶',nm:'Шипы',base:'+{n} урон при касании',w:6,max:99,
+    val:r=>Math.round(12*RAR[r].mul),apply:(p,v)=>{p.thorns+=v;}},
+  {id:'slow',ic:'❄',nm:'Аура холода',base:'замедление врагов +{n}%',w:6,max:6,
+    val:r=>Math.round(14*RAR[r].mul),apply:(p,v)=>{p.slowAura+=v/100;}},
+  {id:'explode',ic:'✺',nm:'Взрыв',base:'трупы взрываются осколками +{n}',w:6,max:6,
+    val:r=>Math.max(1,Math.round(RAR[r].mul-0.6)),apply:(p,v)=>{p.explode+=v;}},
+  {id:'ricochet',ic:'↺',nm:'Рикошет',base:'лучи отскакивают +{n}',w:5,max:5,
+    val:r=>Math.max(1,Math.round(RAR[r].mul-0.6)),apply:(p,v)=>{p.ricochet+=v;p.pierce+=1;}},
+  {id:'chain',ic:'⌁',nm:'Цепь молний',base:'+{n} разряд по врагам',w:5,max:6,
+    val:r=>Math.max(1,Math.round(RAR[r].mul-0.6)),apply:(p,v)=>{p.chain+=v;}},
+  {id:'shotgun',ic:'⁂',nm:'Веер',base:'залп веером +{n} лучей',w:4,max:4,
+    val:r=>Math.max(1,Math.round(RAR[r].mul-0.4)),apply:(p,v)=>{p.shotgun+=v;}},
+  {id:'nova',ic:'❉',nm:'Нова',base:'взрыв света при левелапе +{n}',w:4,max:6,
+    val:r=>Math.max(1,Math.round(RAR[r].mul-0.6)),apply:(p,v)=>{p.nova+=v;}},
 ];
-function pickUpgrades(n,g){
-  const pool=UPGRADES.filter(u=>{
-    const lv=(g.chosen[u.id]||0);
-    return lv<(u.max||99);
-  });
-  // weighted sample without replacement
-  const out=[];const tmp=pool.slice();
-  for(let k=0;k<n&&tmp.length;k++){
-    let tot=tmp.reduce((s,u)=>s+u.w,0);let r=Math.random()*tot;let idx=0;
-    for(let i=0;i<tmp.length;i++){r-=tmp[i].w;if(r<=0){idx=i;break;}}
-    out.push(tmp[idx]);tmp.splice(idx,1);
+function rollRarity(){
+  const luck=metaLv('luck')*0.08;
+  // boost rare+ chances by luck
+  const w={common:RAR.common.w*(1-luck),rare:RAR.rare.w*(1+luck),
+    epic:RAR.epic.w*(1+luck*1.5),legend:RAR.legend.w*(1+luck*2)};
+  let tot=w.common+w.rare+w.epic+w.legend,r=Math.random()*tot;
+  if((r-=w.common)<0)return'common';if((r-=w.rare)<0)return'rare';
+  if((r-=w.epic)<0)return'epic';return'legend';
+}
+function makeOffer(g){
+  const pool=UP.filter(u=>(g.chosen[u.id]||0)<(u.max||99));
+  if(!pool.length)return null;
+  const u=pick(pool);const r=rollRarity();const v=u.val(r);
+  return {u,r,v,ds:u.base.replace('{n}',v)};
+}
+function offers(g,n){
+  const out=[];let guard=0;
+  while(out.length<n&&guard++<40){
+    const o=makeOffer(g);if(!o)break;
+    out.push(o);
   }
   return out;
 }
-function applyUpgrade(u,g,silent){
-  u.apply(g.player);
-  g.chosen[u.id]=(g.chosen[u.id]||0)+1;
-  if(!silent) floatText(g.player.x,g.player.y-30,u.nm,'#3df0ff');
+function applyOffer(o,g){o.u.apply(g.player,o.v);g.chosen[o.u.id]=(g.chosen[o.u.id]||0)+1;
+  if(o.r==='legend'){g.screenShake=14;toast('✦ ЛЕГЕНДА: '+o.u.nm);}}
+//================================================================
+// GAME STATE
+//================================================================
+let G=null,running=false,pendingLevel=false;
+function freshGame(){
+  const m={maxhp:metaLv('maxhp')*14,dmg:metaLv('dmg')*0.08,speed:metaLv('speed')*0.05,
+    magnet:metaLv('magnet')*0.20,regen:metaLv('regen')*0.5,shardx:metaLv('shardx')*0.12,
+    crit:metaLv('crit')*0.05,comboT:metaLv('combo')*0.6};
+  const g={t:0,wave:1,waveTimer:0,spawnAcc:0,alive:true,paused:false,
+    shards:0,level:1,xp:0,xpNeed:5,kills:0,
+    combo:0,comboMul:1,comboTimer:0,comboMaxTime:2.6+m.comboT,
+    rerolls:metaLv('reroll'),nextGamble:3,
+    player:{x:W/2,y:H/2,r:16,hp:130+m.maxhp,maxhp:130+m.maxhp,baseSpeed:280*(1+m.speed),
+      dmg:13*(1+m.dmg),fireRate:0.5,projSpeed:580,projCount:1,spread:0,pierce:0,range:600,
+      projSize:5,lifesteal:0,crit:0.05+m.crit,critMul:2.5,magnet:140*(1+m.magnet),regen:0.6+m.regen,
+      orbit:0,orbitDmg:16,thorns:0,slowAura:0,explode:0,ricochet:0,chain:0,shotgun:0,nova:0,
+      iframe:0,fireAcc:0,_orb:[]},
+    enemies:[],bullets:[],orbs:[],shardsArr:[],parts:[],texts:[],lightnings:[],
+    chosen:{},screenShake:0,flashT:0,waveBanner:0,waveName:'',shardxMul:1+m.shardx};
+  for(let i=0;i<metaLv('start');i++){const o=makeOffer(g);if(o)applyOffer(o,g);}
+  return g;
 }
 
-//================================================================
-// SPAWN / WAVES
-//================================================================
-const ENEMY_TYPES={
-  drifter:{r:14,hpBase:18,spd:62,dmg:8,color:'#ff5d8f',xp:1,shard:1,score:1},
-  swift:{r:11,hpBase:12,spd:128,dmg:6,color:'#5dffb0',xp:1,shard:1,score:1},
-  tank:{r:26,hpBase:70,spd:40,dmg:16,color:'#a36bff',xp:3,shard:3,score:3},
-  splitter:{r:18,hpBase:30,spd:70,dmg:10,color:'#ffd24a',xp:2,shard:2,score:2,split:true},
-  shooter:{r:15,hpBase:26,spd:50,dmg:7,color:'#3df0ff',xp:2,shard:2,score:2,shoots:true},
-  elite:{r:30,hpBase:160,spd:55,dmg:22,color:'#ff8a3d',xp:8,shard:10,score:10,elite:true},
-  boss:{r:54,hpBase:1400,spd:42,dmg:30,color:'#ff2e6e',xp:40,shard:80,score:50,boss:true,shoots:true},
+//--- enemies ---
+const ET={
+  drifter:{r:14,hp:18,spd:62,dmg:8,color:'#ff5d8f',shard:1},
+  swift:{r:11,hp:12,spd:130,dmg:6,color:'#5dffb0',shard:1},
+  tank:{r:26,hp:72,spd:40,dmg:16,color:'#a36bff',shard:3},
+  splitter:{r:18,hp:30,spd:70,dmg:10,color:'#ffd24a',shard:2,split:true},
+  shooter:{r:15,hp:26,spd:50,dmg:7,color:'#3df0ff',shard:2,shoots:true},
+  orbiter:{r:13,hp:34,spd:90,dmg:9,color:'#ff8a3d',shard:2,circles:true},
+  elite:{r:30,hp:170,spd:56,dmg:22,color:'#ff8a3d',shard:10,elite:true},
+  boss:{r:54,hp:1500,spd:44,dmg:30,color:'#ff2e6e',shard:90,boss:true,shoots:true},
 };
-function waveScale(g){return 1+(g.wave-1)*0.16;}      // hp scaling
-function waveSpeedScale(g){return 1+(g.wave-1)*0.022;} // speed scaling
-
-function spawnEnemy(g,typeKey,opts={}){
-  const T=ENEMY_TYPES[typeKey];
-  // spawn off the nearest edge ring
-  let ex,ey;
-  const margin=60;const side=(Math.random()*4)|0;
-  if(side===0){ex=rand(-margin,W+margin);ey=-margin;}
-  else if(side===1){ex=W+margin;ey=rand(-margin,H+margin);}
-  else if(side===2){ex=rand(-margin,W+margin);ey=H+margin;}
-  else{ex=-margin;ey=rand(-margin,H+margin);}
+const hpScale=g=>1+(g.wave-1)*0.15;
+const spdScale=g=>1+(g.wave-1)*0.02;
+function spawnEnemy(g,key,opts={}){
+  const T=ET[key];let ex,ey,m=70,side=(Math.random()*4)|0;
+  if(side===0){ex=rand(-m,W+m);ey=-m;}else if(side===1){ex=W+m;ey=rand(-m,H+m);}
+  else if(side===2){ex=rand(-m,W+m);ey=H+m;}else{ex=-m;ey=rand(-m,H+m);}
   if(opts.x!=null){ex=opts.x;ey=opts.y;}
-  const sc=waveScale(g);
-  const e={
-    type:typeKey,x:ex,y:ey,r:T.r*(opts.rMul||1),
-    hp:(opts.hp!=null?opts.hp:T.hpBase*sc),
-    maxhp:(opts.hp!=null?opts.hp:T.hpBase*sc),
-    spd:T.spd*waveSpeedScale(g)*(opts.spdMul||1),
-    dmg:T.dmg*(1+(g.wave-1)*0.03),
-    color:T.color,xp:T.xp,shard:T.shard,score:T.score||1,
-    split:T.split,shoots:T.shoots,elite:T.elite,boss:T.boss,
-    hit:0,shotCd:rand(1.4,2.6),slowF:1,wob:Math.random()*TAU,
-  };
-  g.enemies.push(e);
-  return e;
+  const sc=hpScale(g);
+  const hp=opts.hp!=null?opts.hp:T.hp*sc;
+  const e={type:key,x:ex,y:ey,r:T.r*(opts.rMul||1),hp,maxhp:hp,
+    spd:T.spd*spdScale(g)*(opts.spdMul||1),dmg:T.dmg*(1+(g.wave-1)*0.02),color:T.color,
+    shard:T.shard,split:T.split,shoots:T.shoots,circles:T.circles,elite:T.elite,boss:T.boss,
+    hit:0,shotCd:rand(1.4,2.6),slowF:1,wob:Math.random()*TAU,circleDir:Math.random()<.5?1:-1};
+  g.enemies.push(e);return e;
 }
-
 function startWave(g){
-  g.waveName = g.wave%10===0 ? 'БОСС' : (g.wave%5===0 ? 'ЭЛИТА' : 'ВОЛНА '+g.wave);
+  g.waveName=g.wave%10===0?'★ БОСС ★':(g.wave%5===0?'ЭЛИТА':'ВОЛНА '+g.wave);
   g.waveBanner=2.2;
-  if(g.wave%10===0){
-    const b=spawnEnemy(g,'boss');
-    b.hp=b.maxhp=ENEMY_TYPES.boss.hpBase*(1+(g.wave/10-1)*0.9)*waveScale(g)*0.6;
-  }
+  if(g.wave%10===0){const b=spawnEnemy(g,'boss');
+    const tier=g.wave/10;b.hp=b.maxhp=ET.boss.hp*(0.6+ (tier-1)*0.55)*hpScale(g);}
 }
-
 function maybeSpawn(g,dt){
   g.spawnAcc+=dt;
-  // spawn budget grows with wave; faster cadence
-  const cadence=Math.max(0.18, 0.95-g.wave*0.02);
-  if(g.spawnAcc<cadence)return;
-  g.spawnAcc=0;
-  const w=g.wave;
-  // composition by wave
-  const roll=Math.random();
-  let key='drifter';
-  if(w>=2 && roll<0.30) key='swift';
-  if(w>=4 && roll>=0.30 && roll<0.45) key='tank';
-  if(w>=3 && roll>=0.45 && roll<0.60) key='splitter';
-  if(w>=6 && roll>=0.60 && roll<0.74) key='shooter';
-  // elites between bosses
-  if(w%5===0 && w%10!==0 && Math.random()<0.04+w*0.002) key='elite';
-  // count scales
-  const burst=1+Math.floor(w/6);
-  for(let i=0;i<burst;i++) spawnEnemy(g,key);
+  const cadence=Math.max(0.16,0.92-g.wave*0.02);
+  if(g.spawnAcc<cadence)return;g.spawnAcc=0;
+  const w=g.wave,roll=Math.random();let key='drifter';
+  if(w>=2&&roll<0.28)key='swift';
+  if(w>=4&&roll>=0.28&&roll<0.42)key='tank';
+  if(w>=3&&roll>=0.42&&roll<0.56)key='splitter';
+  if(w>=6&&roll>=0.56&&roll<0.68)key='shooter';
+  if(w>=8&&roll>=0.68&&roll<0.80)key='orbiter';
+  if(w%5===0&&w%10!==0&&Math.random()<0.05+w*0.002)key='elite';
+  const burst=1+Math.floor(w/5);
+  for(let i=0;i<burst;i++)spawnEnemy(g,key);
 }
 
-//================================================================
-// PARTICLES / TEXT / SHARDS
-//================================================================
-function burst(g,x,y,color,n,spd){
-  for(let i=0;i<n;i++){
-    const a=Math.random()*TAU,s=rand(spd*0.3,spd);
-    g.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.3,.7),max:.7,
-      color,r:rand(1.5,3.5)});
-  }
-}
-function floatText(x,y,txt,color){
-  if(!G)return;
-  G.texts.push({x,y,txt,color,life:.9,vy:-34});
-}
-function dropShards(g,x,y,n,big){
-  for(let i=0;i<n;i++){
-    const a=Math.random()*TAU,s=rand(30,120);
-    g.shardsArr.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:big?5:3.2,
-      value:big?3:1,life:14,pulled:false});
-  }
-}
-
+//--- particles / fx ---
+function burst(g,x,y,color,n,spd){for(let i=0;i<n;i++){const a=Math.random()*TAU,s=rand(spd*0.3,spd);
+  g.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.3,.7),max:.7,color,r:rand(1.5,3.5)});}}
+function floatText(g,x,y,txt,color){g.texts.push({x,y,txt,color,life:.9,vy:-34});}
+function dropShards(g,x,y,n,big){for(let i=0;i<n;i++){const a=Math.random()*TAU,s=rand(30,130);
+  g.shardsArr.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:big?5:3.2,value:big?3:1,life:16,pulled:false});}}
 //================================================================
 // UPDATE
 //================================================================
 function update(dt){
-  const g=G;if(!g||!g.alive||g.paused)return;
-  g.t+=dt;
-  const p=g.player;
+  const g=G;if(!g||!g.alive||g.paused||pendingLevel)return;
+  g.t+=dt;const p=g.player;
 
-  // movement target (mouse/touch or keyboard)
+  // movement
   let tx=input.mx,ty=input.my;
   const kx=(input.keys['d']||input.keys['arrowright']?1:0)-(input.keys['a']||input.keys['arrowleft']?1:0);
   const ky=(input.keys['s']||input.keys['arrowdown']?1:0)-(input.keys['w']||input.keys['arrowup']?1:0);
-  if(kx||ky){ tx=p.x+kx*200; ty=p.y+ky*200; }
-
-  const dx=tx-p.x,dy=ty-p.y;const d=Math.hypot(dx,dy)||1;
-  const reach=Math.min(d,1);
+  if(kx||ky){tx=p.x+kx*200;ty=p.y+ky*200;}
+  const dx=tx-p.x,dy=ty-p.y,d=Math.hypot(dx,dy)||1,reach=Math.min(d/30,1);
   const spd=p.baseSpeed*reach;
-  if(d>4){p.x+=dx/d*spd*dt;p.y+=dy/d*spd*dt;}
+  if(d>3){p.x+=dx/d*spd*dt;p.y+=dy/d*spd*dt;}
   p.x=clamp(p.x,p.r,W-p.r);p.y=clamp(p.y,p.r,H-p.r);
-
-  // regen
-  if(p.regen>0&&p.hp<p.maxhp){p.hp=Math.min(p.maxhp,p.hp+p.regen*dt);}
+  if(p.regen>0&&p.hp<p.maxhp)p.hp=Math.min(p.maxhp,p.hp+p.regen*dt);
   if(p.iframe>0)p.iframe-=dt;
 
-  // wave progression: each wave lasts a fixed time then advances
-  g.waveTimer+=dt;
-  const waveLen = g.wave%10===0 ? 999 : (10+g.wave*0.5); // boss waves end on kill
-  if(g.wave%10!==0 && g.waveTimer>=waveLen){
-    g.wave++; g.waveTimer=0; startWave(g);
-  }
-  if(g.waveBanner>0)g.waveBanner-=dt;
+  // combo decay
+  if(g.combo>0){g.comboTimer-=dt;if(g.comboTimer<=0){g.combo=0;g.comboMul=1;}}
 
+  // wave progress
+  g.waveTimer+=dt;
+  if(g.wave%10!==0){const waveLen=9+g.wave*0.5;
+    if(g.waveTimer>=waveLen){g.wave++;g.waveTimer=0;startWave(g);maybeGamble(g);}}
+  if(g.waveBanner>0)g.waveBanner-=dt;
   maybeSpawn(g,dt);
 
-  // ---- auto fire: target nearest enemy ----
+  // ---- auto fire ----
   p.fireAcc+=dt;
-  if(p.fireAcc>=p.fireRate && g.enemies.length){
+  if(p.fireAcc>=p.fireRate&&g.enemies.length){
     p.fireAcc=0;
-    // nearest
     let best=null,bd=p.range*p.range;
     for(const e of g.enemies){const dd=dist2(p.x,p.y,e.x,e.y);if(dd<bd){bd=dd;best=e;}}
     if(best){
       const baseA=Math.atan2(best.y-p.y,best.x-p.x);
       const n=p.projCount;
-      for(let i=0;i<n;i++){
-        const off=n>1?(i/(n-1)-0.5)*p.spread:0;
-        const a=baseA+off;
-        g.bullets.push({x:p.x,y:p.y,vx:Math.cos(a)*p.projSpeed,vy:Math.sin(a)*p.projSpeed,
-          r:p.projSize,life:p.range/p.projSpeed,dmg:p.dmg,pierce:p.pierce,
-          hits:new Set(),ric:p.ricochet});
-      }
+      for(let i=0;i<n;i++){const off=n>1?(i/(n-1)-0.5)*p.spread:0;fireBullet(g,baseA+off);}
+      // shotgun extra spread burst
+      for(let s=0;s<p.shotgun;s++){const sp=0.9;const cnt=5;
+        for(let i=0;i<cnt;i++){fireBullet(g,baseA+(i/(cnt-1)-0.5)*sp,0.7);}}
     }
   }
 
-  // ---- bullets ----
-  for(let i=g.bullets.length-1;i>=0;i--){
-    const b=g.bullets[i];
+  updateBullets(g,dt);
+  updateEnemies(g,dt);
+  updateOrbs(g,dt);
+  updateOrbiters(g,dt);
+  updateShards(g,dt);
+
+  // particles & texts
+  for(let i=g.parts.length-1;i>=0;i--){const pt=g.parts[i];pt.x+=pt.vx*dt;pt.y+=pt.vy*dt;
+    pt.vx*=0.93;pt.vy*=0.93;pt.life-=dt;if(pt.life<=0)g.parts.splice(i,1);}
+  for(let i=g.texts.length-1;i>=0;i--){const t=g.texts[i];t.y+=t.vy*dt;t.life-=dt;if(t.life<=0)g.texts.splice(i,1);}
+  for(let i=g.lightnings.length-1;i>=0;i--){g.lightnings[i].life-=dt;if(g.lightnings[i].life<=0)g.lightnings.splice(i,1);}
+  if(g.screenShake>0.5)g.screenShake*=0.86;else g.screenShake=0;
+  if(g.flashT>0)g.flashT-=dt;
+  if(p.hp<=0){p.hp=0;onDeath(g);}
+}
+
+function fireBullet(g,a,dmgMul){const p=g.player;
+  g.bullets.push({x:p.x,y:p.y,vx:Math.cos(a)*p.projSpeed,vy:Math.sin(a)*p.projSpeed,r:p.projSize,
+    life:p.range/p.projSpeed,dmg:p.dmg*(dmgMul||1),pierce:p.pierce,ric:p.ricochet,
+    chain:p.chain,hits:new Set()});}
+
+function updateBullets(g,dt){const p=g.player;
+  for(let i=g.bullets.length-1;i>=0;i--){const b=g.bullets[i];
     b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
-    if(b.life<=0||b.x<-40||b.x>W+40||b.y<-40||b.y>H+40){g.bullets.splice(i,1);continue;}
+    if(b.life<=0||b.x<-50||b.x>W+50||b.y<-50||b.y>H+50){g.bullets.splice(i,1);continue;}
     for(const e of g.enemies){
       if(b.hits.has(e))continue;
       if(dist2(b.x,b.y,e.x,e.y)<(e.r+b.r)*(e.r+b.r)){
-        let dmg=b.dmg;let crit=false;
-        if(Math.random()<p.crit){dmg*=p.critMul;crit=true;}
+        let dmg=b.dmg,crit=false;if(Math.random()<p.crit){dmg*=p.critMul;crit=true;}
         e.hp-=dmg;e.hit=0.12;b.hits.add(e);
-        if(p.lifesteal>0){p.hp=Math.min(p.maxhp,p.hp+dmg*p.lifesteal);}
+        if(p.lifesteal>0)p.hp=Math.min(p.maxhp,p.hp+dmg*p.lifesteal);
         burst(g,b.x,b.y,e.color,crit?7:3,crit?180:120);
-        if(crit)floatText(e.x,e.y-e.r,Math.round(dmg),'#ffd24a');
-        // ricochet: redirect to a new enemy
-        if(b.ric>0){
-          let nb=null,nd=1e9;
+        if(crit)floatText(g,e.x,e.y-e.r,Math.round(dmg),'#ffd24a');
+        // chain lightning
+        if(b.chain>0){chainLightning(g,e,b.chain,dmg*0.6,b.hits);}
+        // ricochet
+        if(b.ric>0){let nb=null,nd=1e9;
           for(const o of g.enemies){if(b.hits.has(o))continue;const dd=dist2(b.x,b.y,o.x,o.y);if(dd<nd){nd=dd;nb=o;}}
-          if(nb){const a=Math.atan2(nb.y-b.y,nb.x-b.x);const sp=Math.hypot(b.vx,b.vy);
-            b.vx=Math.cos(a)*sp;b.vy=Math.sin(a)*sp;b.ric--;b.life=Math.max(b.life,0.5);}
-        }
-        if(b.pierce<=0 && b.ric<=0){g.bullets.splice(i,1);break;}
+          if(nb){const a=Math.atan2(nb.y-b.y,nb.x-b.x),sp=Math.hypot(b.vx,b.vy);
+            b.vx=Math.cos(a)*sp;b.vy=Math.sin(a)*sp;b.ric--;b.life=Math.max(b.life,0.5);}}
+        if(b.pierce<=0&&b.ric<=0){g.bullets.splice(i,1);break;}
         else if(b.pierce>0)b.pierce--;
       }
     }
   }
-
-  // ---- enemies ----
-  for(let i=g.enemies.length-1;i>=0;i--){
-    const e=g.enemies[i];
+}
+function chainLightning(g,from,jumps,dmg,exclude){
+  let cur=from,used=new Set(exclude);used.add(from);
+  for(let j=0;j<jumps;j++){
+    let nb=null,nd=200*200;
+    for(const o of g.enemies){if(used.has(o))continue;const dd=dist2(cur.x,cur.y,o.x,o.y);if(dd<nd){nd=dd;nb=o;}}
+    if(!nb)break;
+    nb.hp-=dmg;nb.hit=0.12;used.add(nb);
+    g.lightnings.push({x1:cur.x,y1:cur.y,x2:nb.x,y2:nb.y,life:0.12});
+    burst(g,nb.x,nb.y,'#3df0ff',3,120);cur=nb;
+  }
+}
+function updateEnemies(g,dt){const p=g.player;
+  for(let i=g.enemies.length-1;i>=0;i--){const e=g.enemies[i];
     if(e.hit>0)e.hit-=dt;
-    // slow aura
     e.slowF=1;
-    if(p.slowAura>0){
-      if(dist2(e.x,e.y,p.x,p.y)<(p.magnet*0.9)*(p.magnet*0.9)) e.slowF=1-p.slowAura;
-    }
-    // move toward player (with slight wobble for swift)
+    if(p.slowAura>0&&dist2(e.x,e.y,p.x,p.y)<(p.magnet*0.9)*(p.magnet*0.9))e.slowF=Math.max(0.25,1-p.slowAura);
     const adx=p.x-e.x,ady=p.y-e.y,ad=Math.hypot(adx,ady)||1;
     let mvx=adx/ad,mvy=ady/ad;
     if(e.type==='swift'){e.wob+=dt*6;mvx+=Math.cos(e.wob)*0.4;mvy+=Math.sin(e.wob)*0.4;}
-    const em=Math.hypot(mvx,mvy)||1;
-    const espd=e.spd*e.slowF;
+    if(e.circles&&ad<260){const tx=-ady/ad*e.circleDir,ty=adx/ad*e.circleDir;mvx=mvx*0.3+tx;mvy=mvy*0.3+ty;}
+    const em=Math.hypot(mvx,mvy)||1,espd=e.spd*e.slowF;
     e.x+=mvx/em*espd*dt;e.y+=mvy/em*espd*dt;
-
-    // shooter logic
-    if(e.shoots){
-      e.shotCd-=dt;
-      if(e.shotCd<=0 && ad<700){
-        e.shotCd=e.boss?rand(0.5,1.0):rand(1.8,3.0);
-        const shots=e.boss?7:1;
-        for(let s=0;s<shots;s++){
-          const aa=Math.atan2(ady,adx)+(e.boss?(s/(shots-1)-0.5)*1.1:0);
-          g.orbs.push({x:e.x,y:e.y,vx:Math.cos(aa)*220,vy:Math.sin(aa)*220,r:7,
-            dmg:e.dmg*0.8,life:3.5});
-        }
-      }
-    }
-
-    // thorns + contact dmg
+    if(e.shoots){e.shotCd-=dt;
+      if(e.shotCd<=0&&ad<760){e.shotCd=e.boss?rand(0.5,1.0):rand(1.8,3.0);
+        const shots=e.boss?9:1;
+        for(let s=0;s<shots;s++){const aa=Math.atan2(ady,adx)+(e.boss&&shots>1?(s/(shots-1)-0.5)*1.3:0);
+          g.orbs.push({x:e.x,y:e.y,vx:Math.cos(aa)*230,vy:Math.sin(aa)*230,r:7,dmg:e.dmg*0.8,life:3.6});}}}
     if(dist2(e.x,e.y,p.x,p.y)<(e.r+p.r)*(e.r+p.r)){
-      if(p.iframe<=0){
-        p.hp-=e.dmg;p.iframe=0.55;g.screenShake=8;g.flashT=0.3;
-        burst(g,p.x,p.y,'#ff5d8f',10,200);
-        floatText(p.x,p.y-26,'-'+Math.round(e.dmg),'#ff5d8f');
-      }
-      if(p.thorns>0){e.hp-=p.thorns*dt*4;}
-    }
-
-    if(e.hp<=0){
-      killEnemy(g,e,i);
-    }
+      if(p.iframe<=0){p.hp-=e.dmg;p.iframe=0.85;g.screenShake=8;g.flashT=0.3;
+        breakCombo(g);burst(g,p.x,p.y,'#ff5d8f',10,200);floatText(g,p.x,p.y-26,'-'+Math.round(e.dmg),'#ff5d8f');}
+      if(p.thorns>0)e.hp-=p.thorns*dt*4;}
+    if(e.hp<=0)killEnemy(g,e,i);
   }
-
-  // ---- enemy orbs (projectiles) ----
-  for(let i=g.orbs.length-1;i>=0;i--){
-    const o=g.orbs[i];o.x+=o.vx*dt;o.y+=o.vy*dt;o.life-=dt;
+}
+function updateOrbs(g,dt){const p=g.player;
+  for(let i=g.orbs.length-1;i>=0;i--){const o=g.orbs[i];o.x+=o.vx*dt;o.y+=o.vy*dt;o.life-=dt;
     if(o.life<=0){g.orbs.splice(i,1);continue;}
     if(dist2(o.x,o.y,p.x,p.y)<(o.r+p.r)*(o.r+p.r)){
-      if(p.iframe<=0){p.hp-=o.dmg;p.iframe=0.5;g.screenShake=6;g.flashT=0.25;
-        burst(g,p.x,p.y,'#3df0ff',8,180);floatText(p.x,p.y-26,'-'+Math.round(o.dmg),'#3df0ff');}
-      g.orbs.splice(i,1);
-    }
-  }
-
-  // ---- orbiters (shield orbs) ----
-  if(p.orbit>0){
-    const baseAng=g.t*3.2;
-    for(let k=0;k<p.orbit;k++){
-      const a=baseAng+k/p.orbit*TAU;
-      const ox=p.x+Math.cos(a)*58,oy=p.y+Math.sin(a)*58;
-      for(const e of g.enemies){
-        if(dist2(ox,oy,e.x,e.y)<(e.r+10)*(e.r+10)){
-          e.hp-=p.orbitDmg*dt*5;e.hit=0.1;
-          if(Math.random()<0.3)burst(g,ox,oy,'#a36bff',1,90);
-        }
-      }
-      p._orb=p._orb||[];p._orb[k]={x:ox,y:oy};
-    }
-  }
-
-  // ---- shards collection ----
-  const magR2=p.magnet*p.magnet;
-  for(let i=g.shardsArr.length-1;i>=0;i--){
-    const s=g.shardsArr[i];s.life-=dt;
+      if(p.iframe<=0){p.hp-=o.dmg;p.iframe=0.7;g.screenShake=6;g.flashT=0.25;breakCombo(g);
+        burst(g,p.x,p.y,'#3df0ff',8,180);floatText(g,p.x,p.y-26,'-'+Math.round(o.dmg),'#3df0ff');}
+      g.orbs.splice(i,1);}}}
+function updateOrbiters(g,dt){const p=g.player;p._orb.length=0;
+  if(p.orbit>0){const baseAng=g.t*3.2;
+    for(let k=0;k<p.orbit;k++){const a=baseAng+k/p.orbit*TAU,ox=p.x+Math.cos(a)*60,oy=p.y+Math.sin(a)*60;
+      p._orb.push({x:ox,y:oy});
+      for(const e of g.enemies){if(dist2(ox,oy,e.x,e.y)<(e.r+11)*(e.r+11)){
+        e.hp-=p.orbitDmg*dt*5;e.hit=0.1;if(Math.random()<0.3)burst(g,ox,oy,'#a36bff',1,90);}}}}}
+function updateShards(g,dt){const p=g.player,magR2=p.magnet*p.magnet;
+  for(let i=g.shardsArr.length-1;i>=0;i--){const s=g.shardsArr[i];s.life-=dt;
     if(s.life<=0){g.shardsArr.splice(i,1);continue;}
-    // friction
-    s.vx*=0.92;s.vy*=0.92;
-    const dd=dist2(s.x,s.y,p.x,p.y);
-    if(dd<magR2||s.pulled){
-      s.pulled=true;
-      const a=Math.atan2(p.y-s.y,p.x-s.x);
-      const pull=480;
-      s.vx+=Math.cos(a)*pull*dt*6;s.vy+=Math.sin(a)*pull*dt*6;
-    }
+    s.vx*=0.92;s.vy*=0.92;const dd=dist2(s.x,s.y,p.x,p.y);
+    if(dd<magR2||s.pulled){s.pulled=true;const a=Math.atan2(p.y-s.y,p.x-s.x);
+      s.vx+=Math.cos(a)*480*dt*6;s.vy+=Math.sin(a)*480*dt*6;}
     s.x+=s.vx*dt;s.y+=s.vy*dt;
-    if(dd<(p.r+8)*(p.r+8)){
-      // collect
-      g.shardsArr.splice(i,1);
-      const mult=1+metaLv('shardx')*0.12;
-      g.shards+=Math.round(s.value*mult);
-      g.xp+=s.value;
-      burst(g,s.x,s.y,'#ffd24a',3,80);
-      checkLevel(g);
-    }
-  }
+    if(dd<(p.r+9)*(p.r+9)){g.shardsArr.splice(i,1);collectShard(g,s);}}}
 
-  // ---- particles / texts ----
-  for(let i=g.parts.length-1;i>=0;i--){
-    const pt=g.parts[i];pt.x+=pt.vx*dt;pt.y+=pt.vy*dt;pt.vx*=0.93;pt.vy*=0.93;
-    pt.life-=dt;if(pt.life<=0)g.parts.splice(i,1);
-  }
-  for(let i=g.texts.length-1;i>=0;i--){
-    const t=g.texts[i];t.y+=t.vy*dt;t.life-=dt;if(t.life<=0)g.texts.splice(i,1);
-  }
-
-  if(g.screenShake>0)g.screenShake*=0.86;
-  if(g.flashT>0)g.flashT-=dt;
-
-  // death
-  if(p.hp<=0){p.hp=0;onDeath(g);}
+function collectShard(g,s){
+  // combo: each shard raises combo; mul scales with combo count
+  g.combo++;g.comboTimer=g.comboMaxTime;
+  g.comboMul=1+Math.floor(g.combo/5)*0.5; // x1, x1.5 at 5, x2 at 10...
+  g.comboMul=Math.min(g.comboMul,10);
+  const gain=Math.max(1,Math.round(s.value*g.shardxMul*g.comboMul));
+  g.shards+=gain;g.xp+=s.value*g.comboMul;
+  burst(g,s.x,s.y,'#ffd24a',2,70);
+  checkLevel(g);
 }
+function breakCombo(g){if(g.combo>=10)floatText(g,g.player.x,g.player.y-40,'КОМБО СБИТО',' #ff5d8f');
+  g.combo=0;g.comboMul=1;}
 
 function killEnemy(g,e,idx){
-  g.enemies.splice(idx,1);
-  g.kills++;
+  g.enemies.splice(idx,1);g.kills++;
   burst(g,e.x,e.y,e.color,e.boss?40:(e.elite?18:8),e.boss?320:200);
   const big=e.shard>=3;
   dropShards(g,e.x,e.y,e.boss?30:(e.elite?6:Math.max(1,Math.ceil(e.shard))),big);
-  // explode upgrade
-  if(g.player.explode>0){
-    for(let k=0;k<g.player.explode*3;k++){
-      const a=Math.random()*TAU,s=rand(120,260);
-      g.bullets.push({x:e.x,y:e.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:4,life:0.6,
-        dmg:g.player.dmg*0.5,pierce:1,hits:new Set(),ric:0});
-    }
-  }
-  // splitter
-  if(e.split && e.r>10){
-    for(let k=0;k<2;k++){
-      const c=spawnEnemy(g,'drifter',{x:e.x+rand(-15,15),y:e.y+rand(-15,15),
-        hp:e.maxhp*0.4,rMul:0.7,spdMul:1.4});
-    }
-  }
-  // boss death advances wave
-  if(e.boss){
-    floatText(e.x,e.y,'БОСС ПОВЕРЖЕН',' #ffd24a');
-    g.wave++;g.waveTimer=0;g.screenShake=20;startWave(g);
-  }
+  if(g.player.explode>0){for(let k=0;k<g.player.explode*3;k++){const a=Math.random()*TAU,s=rand(120,260);
+    g.bullets.push({x:e.x,y:e.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:4,life:0.6,dmg:g.player.dmg*0.5,
+      pierce:1,ric:0,chain:0,hits:new Set()});}}
+  if(e.split&&e.r>10){for(let k=0;k<2;k++)spawnEnemy(g,'drifter',{x:e.x+rand(-15,15),y:e.y+rand(-15,15),
+    hp:e.maxhp*0.4,rMul:0.7,spdMul:1.4});}
+  if(e.boss){floatText(g,e.x,e.y,'БОСС ПОВЕРЖЕН','#ffd24a');g.wave++;g.waveTimer=0;g.screenShake=20;
+    startWave(g);maybeGamble(g);}
 }
-
 function checkLevel(g){
-  while(g.xp>=g.xpNeed){
-    g.xp-=g.xpNeed;
-    g.level++;
-    g.xpNeed=Math.round(g.xpNeed*1.32+3);
-    openLevelUp(g);
-  }
+  while(g.xp>=g.xpNeed){g.xp-=g.xpNeed;g.level++;g.xpNeed=Math.round(g.xpNeed*1.3+3);
+    // nova on level up
+    if(g.player.nova>0){const p=g.player;for(let k=0;k<g.player.nova*10;k++){
+      fireBullet(g,k/(g.player.nova*10)*TAU,0.8);}g.screenShake=8;}
+    openLevelUp(g);}
 }
-
 //================================================================
 // RENDER
 //================================================================
-let lastBgT=0;
 function render(){
-  const g=G;
-  ctx.clearRect(0,0,W,H);
-  // background
+  const g=G;ctx.clearRect(0,0,W,H);
   const grd=ctx.createRadialGradient(W/2,H*0.2,0,W/2,H*0.4,Math.max(W,H));
-  grd.addColorStop(0,'#10142e');grd.addColorStop(0.6,'#070912');grd.addColorStop(1,'#03040a');
+  grd.addColorStop(0,'#101634');grd.addColorStop(0.6,'#05060f');grd.addColorStop(1,'#020308');
   ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
-  // subtle grid
-  ctx.globalAlpha=0.06;ctx.strokeStyle='#6a7bd8';ctx.lineWidth=1;
-  const gs=64;
+  ctx.globalAlpha=0.05;ctx.strokeStyle='#6a7bd8';ctx.lineWidth=1;const gs=64;
   for(let x=0;x<W;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
   for(let y=0;y<H;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
   ctx.globalAlpha=1;
-
-  if(!g){return;}
-
+  if(!g)return;
   ctx.save();
-  if(g.screenShake>0.5){ctx.translate(rand(-g.screenShake,g.screenShake),rand(-g.screenShake,g.screenShake));}
+  if(g.screenShake>0.5)ctx.translate(rand(-g.screenShake,g.screenShake),rand(-g.screenShake,g.screenShake));
   const p=g.player;
-
   // shards
-  for(const s of g.shardsArr){
-    ctx.save();ctx.translate(s.x,s.y);ctx.rotate(g.t*3+s.x);
+  for(const s of g.shardsArr){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(g.t*3+s.x);
     ctx.fillStyle='#ffd24a';ctx.shadowColor='#ffd24a';ctx.shadowBlur=10;
-    ctx.beginPath();
-    for(let i=0;i<4;i++){const a=i/4*TAU;const rr=i%2?s.r*0.5:s.r;ctx.lineTo(Math.cos(a)*s.r,Math.sin(a)*s.r);}
-    ctx.fillStyle='#ffd24a';ctx.beginPath();
-    ctx.moveTo(0,-s.r);ctx.lineTo(s.r,0);ctx.lineTo(0,s.r);ctx.lineTo(-s.r,0);ctx.closePath();ctx.fill();
-    ctx.restore();
-  }
-
-  // enemy projectiles
-  ctx.shadowBlur=8;
-  for(const o of g.orbs){
-    ctx.fillStyle='#3df0ff';ctx.shadowColor='#3df0ff';
-    ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,TAU);ctx.fill();
-  }
+    ctx.beginPath();ctx.moveTo(0,-s.r);ctx.lineTo(s.r,0);ctx.lineTo(0,s.r);ctx.lineTo(-s.r,0);ctx.closePath();ctx.fill();ctx.restore();}
   ctx.shadowBlur=0;
-
+  // enemy orbs
+  for(const o of g.orbs){ctx.fillStyle='#3df0ff';ctx.shadowColor='#3df0ff';ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,TAU);ctx.fill();}
+  ctx.shadowBlur=0;
+  // lightnings
+  for(const l of g.lightnings){ctx.strokeStyle='#bff7ff';ctx.lineWidth=2;ctx.shadowColor='#3df0ff';ctx.shadowBlur=10;
+    ctx.globalAlpha=clamp(l.life/0.12,0,1);ctx.beginPath();ctx.moveTo(l.x1,l.y1);
+    const mx=(l.x1+l.x2)/2+rand(-12,12),my=(l.y1+l.y2)/2+rand(-12,12);
+    ctx.lineTo(mx,my);ctx.lineTo(l.x2,l.y2);ctx.stroke();}
+  ctx.globalAlpha=1;ctx.shadowBlur=0;
   // enemies
-  for(const e of g.enemies){
-    ctx.save();ctx.translate(e.x,e.y);
-    const f=e.hit>0?1.8:1;
+  for(const e of g.enemies){ctx.save();ctx.translate(e.x,e.y);
     ctx.shadowColor=e.color;ctx.shadowBlur=e.boss?30:(e.elite?20:10);
-    ctx.fillStyle=e.hit>0?'#ffffff':e.color;
-    ctx.beginPath();
-    if(e.boss||e.elite){ // polygon
-      const sides=e.boss?8:6;ctx.rotate(g.t*0.6);
-      for(let i=0;i<sides;i++){const a=i/sides*TAU;ctx.lineTo(Math.cos(a)*e.r,Math.sin(a)*e.r);}
-      ctx.closePath();
-    }else if(e.type==='tank'){ctx.rect(-e.r,-e.r,e.r*2,e.r*2);}
+    ctx.fillStyle=e.hit>0?'#ffffff':e.color;ctx.beginPath();
+    if(e.boss||e.elite){const sides=e.boss?8:6;ctx.rotate(g.t*0.6);
+      for(let i=0;i<sides;i++){const a=i/sides*TAU;ctx.lineTo(Math.cos(a)*e.r,Math.sin(a)*e.r);}ctx.closePath();}
+    else if(e.type==='tank'){ctx.rect(-e.r,-e.r,e.r*2,e.r*2);}
     else if(e.type==='swift'){ctx.moveTo(0,-e.r);ctx.lineTo(e.r,e.r);ctx.lineTo(-e.r,e.r);ctx.closePath();}
-    else{ctx.arc(0,0,e.r,0,TAU);}
-    ctx.fill();
-    ctx.restore();
-    // hp bar for big enemies
-    if((e.boss||e.elite)&&e.hp<e.maxhp){
-      const bw=e.r*2;const hp=e.hp/e.maxhp;
+    else if(e.type==='orbiter'){ctx.rotate(g.t*4);for(let i=0;i<5;i++){const a=i/5*TAU;ctx.lineTo(Math.cos(a)*e.r,Math.sin(a)*e.r);}ctx.closePath();}
+    else ctx.arc(0,0,e.r,0,TAU);
+    ctx.fill();ctx.restore();
+    if((e.boss||e.elite)&&e.hp<e.maxhp){const bw=e.r*2,hp=clamp(e.hp/e.maxhp,0,1);
       ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(e.x-bw/2,e.y-e.r-12,bw,5);
-      ctx.fillStyle=e.boss?'#ff2e6e':'#ff8a3d';ctx.fillRect(e.x-bw/2,e.y-e.r-12,bw*hp,5);
-    }
-  }
+      ctx.fillStyle=e.boss?'#ff2e6e':'#ff8a3d';ctx.fillRect(e.x-bw/2,e.y-e.r-12,bw*hp,5);}}
   ctx.shadowBlur=0;
-
   // bullets
-  for(const b of g.bullets){
-    ctx.fillStyle='#eaf6ff';ctx.shadowColor='#3df0ff';ctx.shadowBlur=12;
-    ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,TAU);ctx.fill();
-  }
+  for(const b of g.bullets){ctx.fillStyle='#eaf6ff';ctx.shadowColor='#3df0ff';ctx.shadowBlur=12;
+    ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,TAU);ctx.fill();}
   ctx.shadowBlur=0;
-
   // orbiters
-  if(p.orbit>0&&p._orb){
-    for(let k=0;k<p.orbit;k++){const o=p._orb[k];if(!o)continue;
-      ctx.fillStyle='#a36bff';ctx.shadowColor='#a36bff';ctx.shadowBlur=14;
-      ctx.beginPath();ctx.arc(o.x,o.y,9,0,TAU);ctx.fill();}
-    ctx.shadowBlur=0;
-  }
-
-  // magnet ring (faint)
-  ctx.globalAlpha=0.07;ctx.strokeStyle='#ffd24a';ctx.lineWidth=2;
+  if(p.orbit>0){for(const o of p._orb){ctx.fillStyle='#a36bff';ctx.shadowColor='#a36bff';ctx.shadowBlur=14;
+    ctx.beginPath();ctx.arc(o.x,o.y,9,0,TAU);ctx.fill();}ctx.shadowBlur=0;}
+  // magnet ring
+  ctx.globalAlpha=0.06;ctx.strokeStyle='#ffd24a';ctx.lineWidth=2;
   ctx.beginPath();ctx.arc(p.x,p.y,p.magnet,0,TAU);ctx.stroke();ctx.globalAlpha=1;
-
-  // player (prism)
+  // player
   ctx.save();ctx.translate(p.x,p.y);ctx.rotate(g.t*1.2);
-  const blink=p.iframe>0&&((g.t*20)|0)%2===0;
-  ctx.globalAlpha=blink?0.4:1;
+  if(p.iframe>0&&((g.t*20)|0)%2===0)ctx.globalAlpha=0.4;
   ctx.shadowColor='#3df0ff';ctx.shadowBlur=24;
-  const grad=ctx.createLinearGradient(-p.r,-p.r,p.r,p.r);
-  grad.addColorStop(0,'#3df0ff');grad.addColorStop(1,'#a36bff');
-  ctx.fillStyle=grad;
-  ctx.beginPath();
+  const pg=ctx.createLinearGradient(-p.r,-p.r,p.r,p.r);pg.addColorStop(0,'#3df0ff');pg.addColorStop(1,'#a36bff');
+  ctx.fillStyle=pg;ctx.beginPath();
   for(let i=0;i<3;i++){const a=i/3*TAU-Math.PI/2;ctx.lineTo(Math.cos(a)*p.r,Math.sin(a)*p.r);}
-  ctx.closePath();ctx.fill();
-  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,0,3.5,0,TAU);ctx.fill();
+  ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,0,3.5,0,TAU);ctx.fill();
   ctx.restore();ctx.globalAlpha=1;ctx.shadowBlur=0;
-
   // particles
-  for(const pt of g.parts){
-    ctx.globalAlpha=clamp(pt.life/pt.max,0,1);
-    ctx.fillStyle=pt.color;
-    ctx.beginPath();ctx.arc(pt.x,pt.y,pt.r,0,TAU);ctx.fill();
-  }
+  for(const pt of g.parts){ctx.globalAlpha=clamp(pt.life/pt.max,0,1);ctx.fillStyle=pt.color;
+    ctx.beginPath();ctx.arc(pt.x,pt.y,pt.r,0,TAU);ctx.fill();}
   ctx.globalAlpha=1;
-
   // float texts
   ctx.textAlign='center';ctx.font='700 15px Space Grotesk,sans-serif';
-  for(const t of g.texts){
-    ctx.globalAlpha=clamp(t.life/0.9,0,1);
-    ctx.fillStyle=t.color;ctx.fillText(t.txt,t.x,t.y);
-  }
+  for(const t of g.texts){ctx.globalAlpha=clamp(t.life/0.9,0,1);ctx.fillStyle=t.color;ctx.fillText(t.txt,t.x,t.y);}
   ctx.globalAlpha=1;
-
   ctx.restore();
-
   // wave banner
-  if(g.waveBanner>0){
-    const a=Math.min(1,g.waveBanner)*Math.min(1,(2.2-g.waveBanner)*3);
-    ctx.globalAlpha=clamp(a,0,1);
-    ctx.textAlign='center';
+  if(g.waveBanner>0){const a=Math.min(1,g.waveBanner)*Math.min(1,(2.2-g.waveBanner)*3);
+    ctx.globalAlpha=clamp(a,0,1);ctx.textAlign='center';
     ctx.font='700 clamp(34px,8vw,72px) Space Grotesk,sans-serif';
-    ctx.fillStyle=g.waveName==='БОСС'?'#ff2e6e':(g.waveName==='ЭЛИТА'?'#ff8a3d':'#3df0ff');
-    ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=30;
-    ctx.fillText(g.waveName,W/2,H/2-40);
-    ctx.shadowBlur=0;ctx.globalAlpha=1;
-  }
-
+    ctx.fillStyle=g.waveName.includes('БОСС')?'#ff2e6e':(g.waveName==='ЭЛИТА'?'#ff8a3d':'#3df0ff');
+    ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=30;ctx.fillText(g.waveName,W/2,H/2-40);
+    ctx.shadowBlur=0;ctx.globalAlpha=1;}
   // damage flash
-  if(g.flashT>0){
-    ctx.globalAlpha=clamp(g.flashT,0,0.4);
-    ctx.fillStyle='#ff2e6e';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
-  }
+  if(g.flashT>0){ctx.globalAlpha=clamp(g.flashT,0,0.4);ctx.fillStyle='#ff2e6e';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;}
 }
 
 //================================================================
-// HUD updates
+// HUD
 //================================================================
-const $=id=>document.getElementById(id);
-function fmtTime(s){const m=(s/60)|0;const ss=Math.floor(s%60);return m+':'+String(ss).padStart(2,'0');}
-function updateHUD(){
-  const g=G;if(!g)return;
-  $('hudTime').textContent=fmtTime(g.t);
-  $('hudWave').textContent=g.wave;
-  $('hudShards').textContent=g.shards;
+function fmtTime(s){const m=(s/60)|0,ss=Math.floor(s%60);return m+':'+String(ss).padStart(2,'0');}
+function updateHUD(){const g=G;if(!g)return;
+  $('hudTime').textContent=fmtTime(g.t);$('hudWave').textContent=g.wave;$('hudShards').textContent=g.shards;
   const p=g.player;
   $('hpFill').style.width=clamp(p.hp/p.maxhp*100,0,100)+'%';
   $('hpLbl').textContent='ЦЕЛОСТНОСТЬ '+Math.ceil(p.hp)+'/'+Math.round(p.maxhp);
   $('xpFill').style.width=clamp(g.xp/g.xpNeed*100,0,100)+'%';
   $('xpLbl').textContent='УР. '+g.level;
+  const cm=$('combo');
+  if(g.combo>=5){cm.classList.add('on');$('comboMul').textContent='x'+g.comboMul.toFixed(g.comboMul%1?1:0);
+    $('comboBar').firstElementChild.style.width=clamp(g.comboTimer/g.comboMaxTime*100,0,100)+'%';}
+  else cm.classList.remove('on');
 }
-
 //================================================================
 // SCREENS / FLOW
 //================================================================
-const startScreen=$('startScreen'),metaScreen=$('metaScreen'),levelScreen=$('levelScreen'),
-      deadScreen=$('deadScreen'),pauseScreen=$('pauseScreen'),hud=$('hud');
+const startScreen=$('startScreen'),metaScreen=$('metaScreen'),achScreen=$('achScreen'),
+  levelScreen=$('levelScreen'),gambleScreen=$('gambleScreen'),deadScreen=$('deadScreen'),
+  pauseScreen=$('pauseScreen'),hud=$('hud');
+const show=el=>el.classList.remove('hidden'),hide=el=>el.classList.add('hidden');
 
-function show(el){el.classList.remove('hidden');}
-function hide(el){el.classList.add('hidden');}
-
-function refreshBank(){
-  $('bankPill').textContent='⬡ Архив света: '+save.bank;
-  $('metaBank').textContent='⬡ '+save.bank;
+function refreshMenu(){
+  $('bWave').textContent=save.best.wave;
+  $('bRank').textContent=rankFor(save.best.wave);
+  $('bBank').textContent=save.bank;
 }
+function startGame(){[startScreen,metaScreen,achScreen,deadScreen,gambleScreen,levelScreen,pauseScreen].forEach(hide);
+  show(hud);G=freshGame();startWave(G);running=true;pendingLevel=false;}
 
-function startGame(){
-  hide(startScreen);hide(metaScreen);hide(deadScreen);
-  show(hud);
-  G=freshGame();
-  startWave(G);
-  running=true;
+// LEVEL UP
+let curOffers=[];
+function openLevelUp(g){g.paused=true;pendingLevel=true;renderOffers(g);show(levelScreen);}
+function renderOffers(g){
+  curOffers=offers(g,3);const list=$('choiceList');list.innerHTML='';
+  $('levelSub').textContent='уровень '+g.level+' · выбери одно';
+  if(!curOffers.length){g.player.hp=g.player.maxhp;g.shards+=20;closeLevelUp(g);return;}
+  curOffers.forEach(o=>{const lv=g.chosen[o.u.id]||0;
+    const el=document.createElement('div');el.className='choice';el.dataset.r=o.r;
+    el.innerHTML='<div class="ic">'+o.u.ic+'</div><div><div class="nm">'+o.u.nm+'</div>'+
+      '<div class="ds">'+o.ds+'</div></div><div class="tag">'+RAR[o.r].nm+(lv>0?' · ур.'+(lv+1):'')+'</div>';
+    el.onclick=()=>{applyOffer(o,g);closeLevelUp(g);};
+    list.appendChild(el);});
+  // reroll
+  const rw=$('rerollWrap');
+  if(g.rerolls>0){show(rw);$('rerollCost').textContent='беспл. ×'+g.rerolls;
+    $('rerollBtn').onclick=()=>{g.rerolls--;renderOffers(g);};}
+  else if(g.shards>=15){show(rw);$('rerollCost').textContent='15';
+    $('rerollBtn').onclick=()=>{if(g.shards>=15){g.shards-=15;renderOffers(g);}};}
+  else hide(rw);
 }
+function closeLevelUp(g){hide(levelScreen);g.paused=false;pendingLevel=false;checkLevel(g);}
 
-function onDeath(g){
-  if(!g.alive)return;
-  g.alive=false;
-  // bank: shards * mult
+// GAMBLE (chest) — risk-reward trigger
+function maybeGamble(g){
+  if(g.wave>=g.nextGamble){g.nextGamble+=rand(3,5)|0;openGamble(g);}
+}
+let gambleAmt=0;
+function openGamble(g){
+  gambleAmt=Math.round((20+g.wave*6)*(0.8+Math.random()*0.6));
+  g.paused=true;pendingLevel=true;$('gambleAmt').textContent=gambleAmt;
+  $('gambleNote').textContent='Рискни: 60% удвоить · 40% потерять половину';
+  show(gambleScreen);
+}
+function closeGamble(g){hide(gambleScreen);g.paused=false;pendingLevel=false;}
+$('gambleTake').onclick=()=>{if(!G)return;G.shards+=gambleAmt;floatText(G,G.player.x,G.player.y-30,'+'+gambleAmt,'#ffd24a');closeGamble(G);};
+$('gambleRisk').onclick=()=>{if(!G)return;
+  if(Math.random()<0.6){gambleAmt*=2;G.screenShake=10;toast('⚡ x2! '+gambleAmt+' света');}
+  else{gambleAmt=Math.floor(gambleAmt/2);toast('… половина потеряна');}
+  G.shards+=gambleAmt;closeGamble(G);};
+
+// DEATH
+function onDeath(g){if(!g.alive)return;g.alive=false;running=false;
   const gained=g.shards;
-  save.bank+=gained;
+  save.bank+=gained;save.runs++;save.totalKills+=g.kills;save.totalShards+=gained;
   if(g.wave>save.best.wave)save.best.wave=g.wave;
   if(g.level>save.best.level)save.best.level=g.level;
   if(g.t>save.best.time)save.best.time=g.t;
-  persist();refreshBank();
-  $('deadWave').textContent=g.wave;
-  $('deadLevel').textContent=g.level;
-  $('deadTime').textContent=fmtTime(g.t);
-  $('deadShards').textContent=gained;
-  const notes=[
-    'Рекорд волн: '+save.best.wave+'. Свет уходит в Архив — стань сильнее.',
-    'Ты унёс '+gained+' света. Каждая грань в Архиве делает следующий забег дальше.',
-    'Тьма бесконечна. Но и ты теперь немного ярче.',
-  ];
+  persist();checkAch();refreshMenu();
+  $('deadWave').textContent=g.wave;$('deadLevel').textContent=g.level;
+  $('deadTime').textContent=fmtTime(g.t);$('deadShards').textContent=gained;
+  $('deadRank').textContent='ранг: '+rankFor(g.wave);
+  const notes=['Рекорд волн: '+save.best.wave+'. Свет в Архиве — стань сильнее.',
+    'Ты унёс '+gained+' света. Следующий забег будет дальше.',
+    'Тьма бесконечна. Но и ты теперь ярче.',
+    'Чуть-чуть не хватило. Ещё разок?'];
   $('deadNote').textContent=pick(notes);
-  hide(hud);
-  show(deadScreen);
-}
-
-// LEVEL UP
-let pendingLevel=false;
-function openLevelUp(g){
-  g.paused=true;pendingLevel=true;
-  const opts=pickUpgrades(3,g);
-  const list=$('choiceList');list.innerHTML='';
-  $('levelSub').textContent='уровень '+g.level+' · выбери одно';
-  if(opts.length===0){
-    // nothing left to pick: heal + shards
-    g.player.hp=g.player.maxhp;g.shards+=20;g.paused=false;pendingLevel=false;return;
-  }
-  opts.forEach(u=>{
-    const lv=g.chosen[u.id]||0;
-    const el=document.createElement('div');el.className='choice';
-    el.innerHTML=`<div class="ic">${u.ic}</div>
-      <div><div class="nm">${u.nm}</div><div class="ds">${u.ds}</div></div>
-      ${lv>0?`<div class="tag">ур. ${lv+1}</div>`:''}`;
-    el.onclick=()=>{applyUpgrade(u,g);hide(levelScreen);g.paused=false;pendingLevel=false;
-      // chain if more levels queued
-      checkLevel(g);};
-    list.appendChild(el);
-  });
-  show(levelScreen);
+  hide(hud);show(deadScreen);
 }
 
 // META
-function renderMeta(){
-  refreshBank();
-  const list=$('metaList');list.innerHTML='';
-  META.forEach(m=>{
-    const lv=metaLv(m.id);const maxed=lv>=m.max;
-    const cost=maxed?0:m.cost(lv);
+function renderMeta(){$('metaBank').textContent='⬡ '+save.bank;const list=$('metaList');list.innerHTML='';
+  META.forEach(m=>{const lv=metaLv(m.id),maxed=lv>=m.max,cost=maxed?0:m.cost(lv);
     const el=document.createElement('div');el.className='meta-item';
-    el.innerHTML=`<div class="ic">${m.ic}</div>
-      <div class="body"><div class="nm">${m.nm}</div><div class="ds">${m.ds}</div>
-      <div class="lv">${lv}/${m.max}</div></div>`;
+    el.innerHTML='<div class="ic">'+m.ic+'</div><div class="body"><div class="nm">'+m.nm+'</div>'+
+      '<div class="ds">'+m.ds+'</div><div class="lv">'+lv+'/'+m.max+'</div></div>';
     const btn=document.createElement('button');btn.className='meta-buy';
     if(maxed){btn.textContent='МАКС';btn.classList.add('max');btn.disabled=true;}
     else{btn.textContent='⬡ '+cost;btn.disabled=save.bank<cost;
-      btn.onclick=()=>{
-        if(save.bank>=cost){save.bank-=cost;save.meta[m.id]=lv+1;persist();renderMeta();}
-      };}
-    el.appendChild(btn);list.appendChild(el);
-  });
-}
+      btn.onclick=()=>{if(save.bank>=cost){save.bank-=cost;save.meta[m.id]=lv+1;persist();renderMeta();refreshMenu();}};}
+    el.appendChild(btn);list.appendChild(el);});}
+
+// ACH
+function renderAch(){const list=$('achList');list.innerHTML='';
+  ACH.forEach(a=>{const done=save.ach[a.id];const el=document.createElement('div');
+    el.className='ach'+(done?' done':'');
+    el.innerHTML='<div class="ic">'+a.ic+'</div><div><div class="nm">'+a.nm+'</div>'+
+      '<div class="ds">'+a.ds+'</div></div>'+(done?'<div class="chk">✓</div>':'');
+    list.appendChild(el);});}
 
 // PAUSE
-let running=false;
-function togglePause(){
-  if(!G||!G.alive||pendingLevel)return;
+function togglePause(){if(!G||!G.alive||pendingLevel)return;
   if(G.paused){G.paused=false;hide(pauseScreen);}
-  else{G.paused=true;show(pauseScreen);}
-}
+  else{G.paused=true;
+    $('pauseBuild').textContent='волна '+G.wave+' · ур. '+G.level+' · ранг '+rankFor(G.wave);
+    show(pauseScreen);}}
 
-//================================================================
 // BUTTONS
-//================================================================
-$('playBtn').onclick=startGame;
-$('againBtn').onclick=startGame;
-$('metaBtn').onclick=()=>{renderMeta();show(metaScreen);};
-$('metaBack').onclick=()=>{hide(metaScreen);};
+$('playBtn').onclick=startGame;$('againBtn').onclick=startGame;
+$('metaBtn').onclick=()=>{renderMeta();show(metaScreen);};$('metaBack').onclick=()=>hide(metaScreen);
+$('achBtn').onclick=()=>{renderAch();show(achScreen);};$('achBack').onclick=()=>hide(achScreen);
 $('deadMetaBtn').onclick=()=>{renderMeta();hide(deadScreen);show(metaScreen);};
-$('pauseBtn').onclick=togglePause;
-$('resumeBtn').onclick=togglePause;
-$('quitBtn').onclick=()=>{if(G){onDeath(G);}hide(pauseScreen);};
-
-refreshBank();
+$('deadMenuBtn').onclick=()=>{hide(deadScreen);refreshMenu();show(startScreen);};
+$('pauseBtn').onclick=togglePause;$('resumeBtn').onclick=togglePause;
+$('quitBtn').onclick=()=>{hide(pauseScreen);if(G)onDeath(G);};
+refreshMenu();checkAch();
 
 //================================================================
 // MAIN LOOP
 //================================================================
 let last=performance.now();
-function loop(now){
-  let dt=(now-last)/1000;last=now;
-  if(dt>0.05)dt=0.05; // clamp big frame gaps
-  update(dt);
-  render();
-  updateHUD();
-  requestAnimationFrame(loop);
-}
+function loop(now){let dt=(now-last)/1000;last=now;if(dt>0.05)dt=0.05;
+  update(dt);render();updateHUD();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 </script>
 </body>
